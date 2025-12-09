@@ -3,6 +3,7 @@
 import re
 import warnings
 from itertools import zip_longest
+from types import SimpleNamespace
 from typing import Any, List, Optional, Tuple, Union
 
 from wireviz import APP_NAME, APP_URL, __version__
@@ -302,6 +303,9 @@ def gv_connector_loops(connector: Connector) -> List:
 
 
 def gv_conductor_table(cable) -> Table:
+    if cable.category == "multi-lead":
+        return gv_multi_lead_conductor_table(cable)
+
     rows = []
     rows.append(Tr(Td("&nbsp;")))  # spacer row on top
 
@@ -362,6 +366,44 @@ def gv_conductor_table(cable) -> Table:
     return tbl
 
 
+def gv_multi_lead_conductor_table(cable) -> Table:
+    rows = [Tr(Td("&nbsp;"))]
+
+    ins, outs = [], []
+    for conn in cable._connections:
+        if conn.from_ is not None:
+            ins.append(str(conn.from_))
+        if conn.to is not None:
+            outs.append(str(conn.to))
+
+    casing_color = cable.casing_color or cable.color or MultiColor("WH")
+    if cable.category == "multi-lead" and not cable.casing_color:
+        warnings.warn(
+            "multi-lead cables should define a 'casing_color'; defaulting to white."
+        )
+
+    wireinfo = []
+    if cable.show_wirecount and cable.wirecount:
+        wireinfo.append(f"{cable.wirecount}x")
+    if casing_color:
+        wireinfo.append(str(casing_color))
+
+    cells_above = [
+        Td(" " + ", ".join(ins), align="left"),
+        Td(" "),
+        Td(":".join([wi for wi in wireinfo if wi])),
+        Td(" "),
+        Td(", ".join(outs) + " ", align="right"),
+    ]
+    rows.append(Tr(cells_above))
+
+    wire_stub = SimpleNamespace(color=casing_color, index=0)
+    rows.append(Tr(gv_wire_cell(wire_stub, len(cells_above))))
+
+    rows.append(Tr(Td("&nbsp;")))
+    return Table(rows, border=0, cellborder=0, cellspacing=0)
+
+
 def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
     if wire.color:
         color_list = ["#000000"] + wire.color.html_padded_list + ["#000000"]
@@ -400,6 +442,8 @@ def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
     else:  # it's a shield connection
         color = "#000000"
 
+    port_index = 1 if cable.category == "multi-lead" else connection.via.index + 1
+
     if connection.from_ is not None:  # connect to left
         from_port_str = (
             f":p{connection.from_.index+1}r"
@@ -407,7 +451,7 @@ def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
             else ""
         )
         code_left_1 = f"{connection.from_.parent}{from_port_str}:e"
-        code_left_2 = f"{connection.via.parent}:w{connection.via.index+1}:w"
+        code_left_2 = f"{connection.via.parent}:w{port_index}:w"
         # ports in GraphViz are 1-indexed for more natural maping to pin/wire numbers
     else:
         code_left_1, code_left_2 = None, None
@@ -418,7 +462,7 @@ def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
             if harness.connectors[connection.to.parent].style != "simple"
             else ""
         )
-        code_right_1 = f"{connection.via.parent}:w{connection.via.index+1}:e"
+        code_right_1 = f"{connection.via.parent}:w{port_index}:e"
         code_right_2 = f"{connection.to.parent}{to_port_str}:w"
     else:
         code_right_1, code_right_2 = None, None
