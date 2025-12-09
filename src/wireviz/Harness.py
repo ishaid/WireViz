@@ -295,53 +295,182 @@ class Harness:
         )
 
         for cable in self.cables.values():
-            html = []
+            if cable.category != "multi-lead":
+                html = []
 
-            awg_fmt = ""
-            if cable.show_equiv:
-                # Only convert units we actually know about, i.e. currently
-                # mm2 and awg --- other units _are_ technically allowed,
-                # and passed through as-is.
-                if cable.gauge_unit == "mm\u00B2":
-                    awg_fmt = f" ({awg_equiv(cable.gauge)} AWG)"
-                elif cable.gauge_unit.upper() == "AWG":
-                    awg_fmt = f" ({mm2_equiv(cable.gauge)} mm\u00B2)"
+                awg_fmt = ""
+                if cable.show_equiv:
+                    # Only convert units we actually know about, i.e. currently
+                    # mm2 and awg --- other units _are_ technically allowed,
+                    # and passed through as-is.
+                    if cable.gauge_unit == "mm\u00B2":
+                        awg_fmt = f" ({awg_equiv(cable.gauge)} AWG)"
+                    elif cable.gauge_unit.upper() == "AWG":
+                        awg_fmt = f" ({mm2_equiv(cable.gauge)} mm\u00B2)"
 
-            # fmt: off
-            rows = [[f'{html_bgcolor(cable.bgcolor_title)}{remove_links(cable.name)}'
-                        if cable.show_name else None],
-                    [pn_info_string(HEADER_PN, None,
-                        remove_links(cable.pn)) if not isinstance(cable.pn, list) else None,
-                     html_line_breaks(pn_info_string(HEADER_MPN,
-                        cable.manufacturer if not isinstance(cable.manufacturer, list) else None,
-                        cable.mpn if not isinstance(cable.mpn, list) else None)),
-                     html_line_breaks(pn_info_string(HEADER_SPN,
-                        cable.supplier if not isinstance(cable.supplier, list) else None,
-                        cable.spn if not isinstance(cable.spn, list) else None))],
-                    [html_line_breaks(cable.type),
-                     f'{cable.wirecount}x' if cable.show_wirecount else None,
-                     f'{cable.gauge} {cable.gauge_unit}{awg_fmt}' if cable.gauge else None,
-                     '+ S' if cable.shield else None,
-                     f'{cable.length} {cable.length_unit}' if cable.length > 0 else None,
-                     translate_color(cable.color, self.options.color_mode) if cable.color else None,
-                     html_colorbar(cable.color)],
-                    '<!-- wire table -->',
-                    [html_image(cable.image)],
-                    [html_caption(cable.image)]]
-            # fmt: on
+                # fmt: off
+                rows = [[f'{html_bgcolor(cable.bgcolor_title)}{remove_links(cable.name)}'
+                            if cable.show_name else None],
+                        [pn_info_string(HEADER_PN, None,
+                            remove_links(cable.pn)) if not isinstance(cable.pn, list) else None,
+                         html_line_breaks(pn_info_string(HEADER_MPN,
+                            cable.manufacturer if not isinstance(cable.manufacturer, list) else None,
+                            cable.mpn if not isinstance(cable.mpn, list) else None)),
+                         html_line_breaks(pn_info_string(HEADER_SPN,
+                            cable.supplier if not isinstance(cable.supplier, list) else None,
+                            cable.spn if not isinstance(cable.spn, list) else None))],
+                        [html_line_breaks(cable.type),
+                         f'{cable.wirecount}x' if cable.show_wirecount else None,
+                         f'{cable.gauge} {cable.gauge_unit}{awg_fmt}' if cable.gauge else None,
+                         '+ S' if cable.shield else None,
+                         f'{cable.length} {cable.length_unit}' if cable.length > 0 else None,
+                         translate_color(cable.color, self.options.color_mode) if cable.color else None,
+                         html_colorbar(cable.color)],
+                        '<!-- wire table -->',
+                        [html_image(cable.image)],
+                        [html_caption(cable.image)]]
+                # fmt: on
 
-            rows.extend(get_additional_component_table(self, cable))
-            rows.append([html_line_breaks(cable.notes)])
-            html.extend(nested_html_table(rows, html_bgcolor_attr(cable.bgcolor)))
+                rows.extend(get_additional_component_table(self, cable))
+                rows.append([html_line_breaks(cable.notes)])
+                html.extend(nested_html_table(rows, html_bgcolor_attr(cable.bgcolor)))
 
-            wirehtml = []
-            # conductor table
-            wirehtml.append('<table border="0" cellspacing="0" cellborder="0">')
-            wirehtml.append("   <tr><td>&nbsp;</td></tr>")
+                wirehtml = []
+                # conductor table
+                wirehtml.append('<table border="0" cellspacing="0" cellborder="0">')
+                wirehtml.append("   <tr><td>&nbsp;</td></tr>")
 
-            for i, (connection_color, wirelabel) in enumerate(
-                zip_longest(cable.colors, cable.wirelabels), 1
-            ):
+                for i, (connection_color, wirelabel) in enumerate(
+                    zip_longest(cable.colors, cable.wirelabels), 1
+                ):
+                    wirehtml.append("   <tr>")
+                    wirehtml.append(f"    <td><!-- {i}_in --></td>")
+                    wirehtml.append(f"    <td>")
+
+                    wireinfo = []
+                    if cable.show_wirenumbers:
+                        wireinfo.append(str(i))
+                    colorstr = wv_colors.translate_color(
+                        connection_color, self.options.color_mode
+                    )
+                    if colorstr:
+                        wireinfo.append(colorstr)
+                    if cable.wirelabels:
+                        wireinfo.append(wirelabel if wirelabel is not None else "")
+                    wirehtml.append(f'     {":".join(wireinfo)}')
+
+                    wirehtml.append(f"    </td>")
+                    wirehtml.append(f"    <td><!-- {i}_out --></td>")
+                    wirehtml.append("   </tr>")
+
+                    # fmt: off
+                    bgcolors = ['#000000'] + get_color_hex(connection_color, pad=pad) + ['#000000']
+                    wirehtml.append(f"   <tr>")
+                    wirehtml.append(f'    <td colspan="3" border="0" cellspacing="0" cellpadding="0" port="w{i}" height="{(2 * len(bgcolors))}">')
+                    wirehtml.append('     <table cellspacing="0" cellborder="0" border="0">')
+                    for j, bgcolor in enumerate(bgcolors[::-1]):  # Reverse to match the curved wires when more than 2 colors
+                        wirehtml.append(f'      <tr><td colspan="3" cellpadding="0" height="2" bgcolor="{bgcolor if bgcolor != "" else wv_colors.default_color}" border="0"></td></tr>')
+                    wirehtml.append("     </table>")
+                    wirehtml.append("    </td>")
+                    wirehtml.append("   </tr>")
+                    # fmt: on
+
+                    # for bundles, individual wires can have part information
+                    if cable.category == "bundle":
+                        # create a list of wire parameters
+                        wireidentification = []
+                        if isinstance(cable.pn, list):
+                            wireidentification.append(
+                                pn_info_string(
+                                    HEADER_PN, None, remove_links(cable.pn[i - 1])
+                                )
+                            )
+                        manufacturer_info = pn_info_string(
+                            HEADER_MPN,
+                            (
+                                cable.manufacturer[i - 1]
+                                if isinstance(cable.manufacturer, list)
+                                else None
+                            ),
+                            cable.mpn[i - 1] if isinstance(cable.mpn, list) else None,
+                        )
+                        supplier_info = pn_info_string(
+                            HEADER_SPN,
+                            (
+                                cable.supplier[i - 1]
+                                if isinstance(cable.supplier, list)
+                                else None
+                            ),
+                            cable.spn[i - 1] if isinstance(cable.spn, list) else None,
+                        )
+                        if manufacturer_info:
+                            wireidentification.append(html_line_breaks(manufacturer_info))
+                        if supplier_info:
+                            wireidentification.append(html_line_breaks(supplier_info))
+                        # print parameters into a table row under the wire
+                        if len(wireidentification) > 0:
+                            # fmt: off
+                            wirehtml.append('   <tr><td colspan="3">')
+                            wirehtml.append('    <table border="0" cellspacing="0" cellborder="0"><tr>')
+                            for attrib in wireidentification:
+                                wirehtml.append(f"     <td>{attrib}</td>")
+                            wirehtml.append("    </tr></table>")
+                            wirehtml.append("   </td></tr>")
+                            # fmt: on
+            
+            elif cable.category == "multi-lead":
+                print("multilead wire")
+
+                html = []
+
+                awg_fmt = ""
+                if cable.show_equiv:
+                    # Only convert units we actually know about, i.e. currently
+                    # mm2 and awg --- other units _are_ technically allowed,
+                    # and passed through as-is.
+                    if cable.gauge_unit == "mm\u00B2":
+                        awg_fmt = f" ({awg_equiv(cable.gauge)} AWG)"
+                    elif cable.gauge_unit.upper() == "AWG":
+                        awg_fmt = f" ({mm2_equiv(cable.gauge)} mm\u00B2)"
+
+                # fmt: off
+                rows = [[f'{html_bgcolor(cable.bgcolor_title)}{remove_links(cable.name)}'
+                            if cable.show_name else None],
+                        [pn_info_string(HEADER_PN, None,
+                            remove_links(cable.pn)) if not isinstance(cable.pn, list) else None,
+                         html_line_breaks(pn_info_string(HEADER_MPN,
+                            cable.manufacturer if not isinstance(cable.manufacturer, list) else None,
+                            cable.mpn if not isinstance(cable.mpn, list) else None)),
+                         html_line_breaks(pn_info_string(HEADER_SPN,
+                            cable.supplier if not isinstance(cable.supplier, list) else None,
+                            cable.spn if not isinstance(cable.spn, list) else None))],
+                        [html_line_breaks(cable.type),
+                         f'{cable.wirecount}x' if cable.show_wirecount else None,
+                         f'{cable.gauge} {cable.gauge_unit}{awg_fmt}' if cable.gauge else None,
+                         '+ S' if cable.shield else None,
+                         f'{cable.length} {cable.length_unit}' if cable.length > 0 else None,
+                         translate_color(cable.color, self.options.color_mode) if cable.color else None,
+                         html_colorbar(cable.color)],
+                        '<!-- wire table -->',
+                        [html_image(cable.image)],
+                        [html_caption(cable.image)]]
+                # fmt: on
+
+                rows.extend(get_additional_component_table(self, cable))
+                rows.append([html_line_breaks(cable.notes)])
+                html.extend(nested_html_table(rows, html_bgcolor_attr(cable.bgcolor)))
+
+                wirehtml = []
+                # conductor table
+                wirehtml.append('<table border="0" cellspacing="0" cellborder="0">')
+                wirehtml.append("   <tr><td>&nbsp;</td></tr>")
+
+                # for i, (connection_color, wirelabel) in enumerate(
+                #     zip_longest(cable.colors, cable.wirelabels), 1
+                # ):
+                    
+                i = 1
+
                 wirehtml.append("   <tr>")
                 wirehtml.append(f"    <td><!-- {i}_in --></td>")
                 wirehtml.append(f"    <td>")
@@ -350,7 +479,7 @@ class Harness:
                 if cable.show_wirenumbers:
                     wireinfo.append(str(i))
                 colorstr = wv_colors.translate_color(
-                    connection_color, self.options.color_mode
+                    "YE", self.options.color_mode
                 )
                 if colorstr:
                     wireinfo.append(colorstr)
@@ -363,7 +492,7 @@ class Harness:
                 wirehtml.append("   </tr>")
 
                 # fmt: off
-                bgcolors = ['#000000'] + get_color_hex(connection_color, pad=pad) + ['#000000']
+                bgcolors = ['#000000'] + get_color_hex("RD", pad=pad) + ['#000000']
                 wirehtml.append(f"   <tr>")
                 wirehtml.append(f'    <td colspan="3" border="0" cellspacing="0" cellpadding="0" port="w{i}" height="{(2 * len(bgcolors))}">')
                 wirehtml.append('     <table cellspacing="0" cellborder="0" border="0">')
@@ -373,49 +502,6 @@ class Harness:
                 wirehtml.append("    </td>")
                 wirehtml.append("   </tr>")
                 # fmt: on
-
-                # for bundles, individual wires can have part information
-                if cable.category == "bundle":
-                    # create a list of wire parameters
-                    wireidentification = []
-                    if isinstance(cable.pn, list):
-                        wireidentification.append(
-                            pn_info_string(
-                                HEADER_PN, None, remove_links(cable.pn[i - 1])
-                            )
-                        )
-                    manufacturer_info = pn_info_string(
-                        HEADER_MPN,
-                        (
-                            cable.manufacturer[i - 1]
-                            if isinstance(cable.manufacturer, list)
-                            else None
-                        ),
-                        cable.mpn[i - 1] if isinstance(cable.mpn, list) else None,
-                    )
-                    supplier_info = pn_info_string(
-                        HEADER_SPN,
-                        (
-                            cable.supplier[i - 1]
-                            if isinstance(cable.supplier, list)
-                            else None
-                        ),
-                        cable.spn[i - 1] if isinstance(cable.spn, list) else None,
-                    )
-                    if manufacturer_info:
-                        wireidentification.append(html_line_breaks(manufacturer_info))
-                    if supplier_info:
-                        wireidentification.append(html_line_breaks(supplier_info))
-                    # print parameters into a table row under the wire
-                    if len(wireidentification) > 0:
-                        # fmt: off
-                        wirehtml.append('   <tr><td colspan="3">')
-                        wirehtml.append('    <table border="0" cellspacing="0" cellborder="0"><tr>')
-                        for attrib in wireidentification:
-                            wirehtml.append(f"     <td>{attrib}</td>")
-                        wirehtml.append("    </tr></table>")
-                        wirehtml.append("   </td></tr>")
-                        # fmt: on
 
             if cable.shield:
                 wirehtml.append("   <tr><td>&nbsp;</td></tr>")  # spacer
@@ -443,80 +529,156 @@ class Harness:
             html = [
                 row.replace("<!-- wire table -->", "\n".join(wirehtml)) for row in html
             ]
+            
 
-            # connections
-            for connection in cable.connections:
-                if isinstance(connection.via_port, int):
-                    # check if it's an actual wire and not a shield
-                    dot.attr(
-                        "edge",
-                        color=":".join(
-                            ["#000000"]
-                            + wv_colors.get_color_hex(
-                                cable.colors[connection.via_port - 1], pad=pad
-                            )
-                            + ["#000000"]
-                        ),
-                    )
-                else:  # it's a shield connection
-                    # shield is shown with specified color and black borders, or as a thin black wire otherwise
-                    dot.attr(
-                        "edge",
-                        color=(
-                            ":".join(["#000000", shield_color_hex, "#000000"])
-                            if isinstance(cable.shield, str)
-                            else "#000000"
-                        ),
-                    )
-                if connection.from_pin is not None:  # connect to left
-                    from_connector = self.connectors[connection.from_name]
-                    from_pin_index = from_connector.pins.index(connection.from_pin)
-                    from_port_str = (
-                        f":p{from_pin_index+1}r"
-                        if from_connector.style != "simple"
-                        else ""
-                    )
-                    code_left_1 = f"{connection.from_name}{from_port_str}:e"
-                    code_left_2 = f"{cable.name}:w{connection.via_port}:w"
-                    dot.edge(code_left_1, code_left_2)
-                    if from_connector.show_name:
-                        from_info = [
-                            str(connection.from_name),
-                            str(connection.from_pin),
+            if cable.category != "multi-lead":
+                # connections
+                for connection in cable.connections:
+                    if isinstance(connection.via_port, int):
+                        # check if it's an actual wire and not a shield
+                        dot.attr(
+                            "edge",
+                            color=":".join(
+                                ["#000000"]
+                                + wv_colors.get_color_hex(
+                                    cable.colors[connection.via_port - 1], pad=pad
+                                )
+                                + ["#000000"]
+                            ),
+                        )
+                    else:  # it's a shield connection
+                        # shield is shown with specified color and black borders, or as a thin black wire otherwise
+                        dot.attr(
+                            "edge",
+                            color=(
+                                ":".join(["#000000", shield_color_hex, "#000000"])
+                                if isinstance(cable.shield, str)
+                                else "#000000"
+                            ),
+                        )
+                    if connection.from_pin is not None:  # connect to left
+                        from_connector = self.connectors[connection.from_name]
+                        from_pin_index = from_connector.pins.index(connection.from_pin)
+                        from_port_str = (
+                            f":p{from_pin_index+1}r"
+                            if from_connector.style != "simple"
+                            else ""
+                        )
+                        code_left_1 = f"{connection.from_name}{from_port_str}:e"
+                        code_left_2 = f"{cable.name}:w{connection.via_port}:w"
+                        dot.edge(code_left_1, code_left_2)
+                        if from_connector.show_name:
+                            from_info = [
+                                str(connection.from_name),
+                                str(connection.from_pin),
+                            ]
+                            if from_connector.pinlabels:
+                                pinlabel = from_connector.pinlabels[from_pin_index]
+                                if pinlabel != "":
+                                    from_info.append(pinlabel)
+                            from_string = ":".join(from_info)
+                        else:
+                            from_string = ""
+                        html = [
+                            row.replace(f"<!-- {connection.via_port}_in -->", from_string)
+                            for row in html
                         ]
-                        if from_connector.pinlabels:
-                            pinlabel = from_connector.pinlabels[from_pin_index]
-                            if pinlabel != "":
-                                from_info.append(pinlabel)
-                        from_string = ":".join(from_info)
-                    else:
-                        from_string = ""
-                    html = [
-                        row.replace(f"<!-- {connection.via_port}_in -->", from_string)
-                        for row in html
-                    ]
-                if connection.to_pin is not None:  # connect to right
-                    to_connector = self.connectors[connection.to_name]
-                    to_pin_index = to_connector.pins.index(connection.to_pin)
-                    to_port_str = (
-                        f":p{to_pin_index+1}l" if to_connector.style != "simple" else ""
-                    )
-                    code_right_1 = f"{cable.name}:w{connection.via_port}:e"
-                    code_right_2 = f"{connection.to_name}{to_port_str}:w"
-                    dot.edge(code_right_1, code_right_2)
-                    if to_connector.show_name:
-                        to_info = [str(connection.to_name), str(connection.to_pin)]
-                        if to_connector.pinlabels:
-                            pinlabel = to_connector.pinlabels[to_pin_index]
-                            if pinlabel != "":
-                                to_info.append(pinlabel)
-                        to_string = ":".join(to_info)
-                    else:
-                        to_string = ""
-                    html = [
-                        row.replace(f"<!-- {connection.via_port}_out -->", to_string)
-                        for row in html
-                    ]
+                    if connection.to_pin is not None:  # connect to right
+                        to_connector = self.connectors[connection.to_name]
+                        to_pin_index = to_connector.pins.index(connection.to_pin)
+                        to_port_str = (
+                            f":p{to_pin_index+1}l" if to_connector.style != "simple" else ""
+                        )
+                        code_right_1 = f"{cable.name}:w{connection.via_port}:e"
+                        code_right_2 = f"{connection.to_name}{to_port_str}:w"
+                        dot.edge(code_right_1, code_right_2)
+                        if to_connector.show_name:
+                            to_info = [str(connection.to_name), str(connection.to_pin)]
+                            if to_connector.pinlabels:
+                                pinlabel = to_connector.pinlabels[to_pin_index]
+                                if pinlabel != "":
+                                    to_info.append(pinlabel)
+                            to_string = ":".join(to_info)
+                        else:
+                            to_string = ""
+                        html = [
+                            row.replace(f"<!-- {connection.via_port}_out -->", to_string)
+                            for row in html
+                        ]
+            elif cable.category:
+                # connections
+                for connection in cable.connections:
+                    if isinstance(connection.via_port, int):
+                        # check if it's an actual wire and not a shield
+                        dot.attr(
+                            "edge",
+                            color=":".join(
+                                ["#000000"]
+                                + wv_colors.get_color_hex(
+                                    cable.colors[connection.via_port - 1], pad=pad
+                                )
+                                + ["#000000"]
+                            ),
+                        )
+                    else:  # it's a shield connection
+                        # shield is shown with specified color and black borders, or as a thin black wire otherwise
+                        dot.attr(
+                            "edge",
+                            color=(
+                                ":".join(["#000000", shield_color_hex, "#000000"])
+                                if isinstance(cable.shield, str)
+                                else "#000000"
+                            ),
+                        )
+                    if connection.from_pin is not None:  # connect to left
+                        from_connector = self.connectors[connection.from_name]
+                        from_pin_index = from_connector.pins.index(connection.from_pin)
+                        from_port_str = (
+                            f":p{from_pin_index+1}r"
+                            if from_connector.style != "simple"
+                            else ""
+                        )
+                        code_left_1 = f"{connection.from_name}{from_port_str}:e"
+                        code_left_2 = f"{cable.name}:w1:w"
+                        dot.edge(code_left_1, code_left_2)
+                        if from_connector.show_name:
+                            from_info = [
+                                str(connection.from_name),
+                                str(connection.from_pin),
+                            ]
+                            if from_connector.pinlabels:
+                                pinlabel = from_connector.pinlabels[from_pin_index]
+                                if pinlabel != "":
+                                    from_info.append(pinlabel)
+                            from_string = ":".join(from_info)
+                        else:
+                            from_string = ""
+                        html = [
+                            row.replace(f"<!-- {connection.via_port}_in -->", from_string)
+                            for row in html
+                        ]
+                    if connection.to_pin is not None:  # connect to right
+                        to_connector = self.connectors[connection.to_name]
+                        to_pin_index = to_connector.pins.index(connection.to_pin)
+                        to_port_str = (
+                            f":p{to_pin_index+1}l" if to_connector.style != "simple" else ""
+                        )
+                        code_right_1 = f"{cable.name}:w1:e"
+                        code_right_2 = f"{connection.to_name}{to_port_str}:w"
+                        dot.edge(code_right_1, code_right_2)
+                        if to_connector.show_name:
+                            to_info = [str(connection.to_name), str(connection.to_pin)]
+                            if to_connector.pinlabels:
+                                pinlabel = to_connector.pinlabels[to_pin_index]
+                                if pinlabel != "":
+                                    to_info.append(pinlabel)
+                            to_string = ":".join(to_info)
+                        else:
+                            to_string = ""
+                        html = [
+                            row.replace(f"<!-- {connection.via_port}_out -->", to_string)
+                            for row in html
+                        ]
 
             style, bgcolor = (
                 ("filled,dashed", self.options.bgcolor_bundle)
