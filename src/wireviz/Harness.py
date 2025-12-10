@@ -492,7 +492,12 @@ class Harness:
                 wirehtml.append("   </tr>")
 
                 # fmt: off
-                bgcolors = ['#000000'] + get_color_hex("RD", pad=pad) + ['#000000']
+                if cable.casing_color != None:
+                    bgcolors = ['#000000'] + get_color_hex(cable.casing_color, pad=pad) + ['#000000']
+                elif cable.casing_color == None:
+                    print("Warning: when using multi-lead wires you must defince 'casing_color'.")
+                    bgcolors = ['#000000'] + get_color_hex("WH", pad=pad) + ['#000000']
+
                 wirehtml.append(f"   <tr>")
                 wirehtml.append(f'    <td colspan="3" border="0" cellspacing="0" cellpadding="0" port="w{i}" height="{(2 * len(bgcolors))}">')
                 wirehtml.append('     <table cellspacing="0" cellborder="0" border="0">')

@@ -272,6 +272,7 @@ class Cable:
     show_wirenumbers: Optional[bool] = None
     ignore_in_bom: bool = False
     additional_components: List[AdditionalComponent] = field(default_factory=list)
+    casing_color: Optional[Color] = None
 
     def __post_init__(self) -> None:
         if isinstance(self.image, dict):
