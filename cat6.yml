@@ -14,6 +14,8 @@ cables:
     category: multi-lead
     color_code: T568A
     casing_color: GY
+    show_name: false
+    show_wirenumbers: false
     wirecount: 8 # need to specify number of wires explicitly when using a color code
     gauge: 24 AWG # also accepts AWG as unit
     length: 1 # length in m

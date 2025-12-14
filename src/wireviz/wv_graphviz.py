@@ -376,7 +376,9 @@ def gv_multi_lead_conductor_table(cable) -> Table:
         if conn.to is not None:
             outs.append(str(conn.to))
 
-    casing_color = cable.casing_color or cable.color or MultiColor("WH")
+    # Wire color is set to casing_color or white by default
+    # > wire color cant use colors or color_code as they are used for the ends themselves.
+    casing_color = cable.casing_color  or MultiColor("WH")
     if cable.category == "multi-lead" and not cable.casing_color:
         warnings.warn(
             "multi-lead cables should define a 'casing_color'; defaulting to white."
@@ -388,17 +390,10 @@ def gv_multi_lead_conductor_table(cable) -> Table:
     if casing_color:
         wireinfo.append(str(casing_color))
 
-    cells_above = [
-        Td(" " + ", ".join(ins), align="left"),
-        Td(" "),
-        Td(":".join([wi for wi in wireinfo if wi])),
-        Td(" "),
-        Td(", ".join(outs) + " ", align="right"),
-    ]
-    rows.append(Tr(cells_above))
+    rows.append(Tr([Td(cable.type)]))   
 
     wire_stub = SimpleNamespace(color=casing_color, index=0)
-    rows.append(Tr(gv_wire_cell(wire_stub, len(cells_above))))
+    rows.append(Tr(gv_wire_cell(wire_stub, 1)))
 
     rows.append(Tr(Td("&nbsp;")))
     return Table(rows, border=0, cellborder=0, cellspacing=0)
