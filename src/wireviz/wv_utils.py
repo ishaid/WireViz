@@ -109,6 +109,33 @@ def parse_number_and_unit(
         return NumberAndUnit(number, unit)
 
 
+def parse_number_and_unit_allow_list(
+    inp: Optional[Union[List[Union[NumberAndUnit, float, int, str]], NumberAndUnit, float, int, str]],
+    default_unit: Optional[str] = None,
+) -> Optional[Union[NumberAndUnit, List[NumberAndUnit]]]:
+    if isinstance(inp, list):
+        if len(inp) == 0:
+            raise Exception("List must contain at least one value")
+
+        unit_override = default_unit
+        potential_unit = inp[-1]
+        if (
+            isinstance(potential_unit, str)
+            and " " not in potential_unit
+        ):
+            try:
+                float(potential_unit)
+            except ValueError:
+                unit_override = potential_unit
+                inp = inp[:-1]
+                if len(inp) == 0:
+                    raise Exception("List must contain at least one numeric value")
+
+        return [parse_number_and_unit(value, unit_override) for value in inp]
+
+    return parse_number_and_unit(inp, default_unit)
+
+
 def int2tuple(inp):
     if isinstance(inp, tuple):
         output = inp

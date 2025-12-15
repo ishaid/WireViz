@@ -25,6 +25,7 @@ from wireviz.wv_utils import (
     aspect_ratio,
     awg_equiv,
     mm2_equiv,
+    parse_number_and_unit_allow_list,
     parse_number_and_unit,
     remove_links,
 )
@@ -541,7 +542,7 @@ class Connection:
 @dataclass
 class Cable(TopLevelGraphicalComponent):
     # cable-specific properties
-    gauge: Optional[NumberAndUnit] = None
+    gauge: Optional[Union[NumberAndUnit, List[NumberAndUnit]]] = None
     length: Optional[NumberAndUnit] = None
     color_code: Optional[str] = None
     casing_color: Optional[MultiColor] = None
@@ -567,29 +568,38 @@ class Cable(TopLevelGraphicalComponent):
     def unit(self):  # for compatibility with parent class
         return self.length
 
-    @property
-    def gauge_str(self):
-        if not self.gauge:
-            return None
-        actual_gauge = f"{self.gauge.number} {self.gauge.unit}"
-        actual_gauge = actual_gauge.replace("mm2", "mm\u00B2")
-        return actual_gauge
+    def _gauge_values(self) -> List[NumberAndUnit]:
+        if self.gauge is None:
+            return []
+        return self.gauge if isinstance(self.gauge, list) else [self.gauge]
 
-    @property
-    def gauge_str_with_equiv(self):
-        if not self.gauge:
-            return None
-        actual_gauge = self.gauge_str
+    def _format_gauge(self, gauge: NumberAndUnit, include_equiv: bool) -> str:
+        actual_gauge = f"{gauge.number} {gauge.unit}"
         equivalent_gauge = ""
-        if self.show_equiv:
-            # convert unit if known
-            if self.gauge.unit == "mm2":
-                equivalent_gauge = f" ({awg_equiv(self.gauge.number)} AWG)"
-            elif self.gauge.unit.upper() == "AWG":
-                equivalent_gauge = f" ({mm2_equiv(self.gauge.number)} mm2)"
+        if include_equiv:
+            if gauge.unit == "mm2":
+                equivalent_gauge = f" ({awg_equiv(gauge.number)} AWG)"
+            elif gauge.unit.upper() == "AWG":
+                equivalent_gauge = f" ({mm2_equiv(gauge.number)} mm2)"
         out = f"{actual_gauge}{equivalent_gauge}"
         out = out.replace("mm2", "mm\u00B2")
         return out
+
+    @property
+    def gauge_str(self):
+        gauges = self._gauge_values()
+        if not gauges:
+            return None
+        return ", ".join([self._format_gauge(gauge, False) for gauge in gauges])
+
+    @property
+    def gauge_str_with_equiv(self):
+        gauges = self._gauge_values()
+        if not gauges:
+            return None
+        return ", ".join(
+            [self._format_gauge(gauge, self.show_equiv) for gauge in gauges]
+        )
 
     @property
     def length_str(self):
@@ -643,6 +653,15 @@ class Cable(TopLevelGraphicalComponent):
         else:
             return None  # non-bundles do not support lists of part data
 
+    def _get_wire_gauge(self, idx) -> Optional[NumberAndUnit]:
+        if isinstance(self.gauge, list):
+            if len(self.gauge) == 1:
+                return self.gauge[0]
+            if idx >= len(self.gauge):
+                raise Exception("lists of gauge must match wirecount")
+            return self.gauge[idx]
+        return self.gauge
+
     def __post_init__(self) -> None:
         super().__post_init__()
 
@@ -663,7 +682,7 @@ class Cable(TopLevelGraphicalComponent):
         # allow gauge, length, and other fields to be lists too (like part numbers),
         # and assign them the same way to bundles.
 
-        self.gauge = parse_number_and_unit(self.gauge, "mm2")
+        self.gauge = parse_number_and_unit_allow_list(self.gauge, "mm2")
         self.length = parse_number_and_unit(self.length, "m")
         self.amount = self.length  # for BOM
 
@@ -690,6 +709,10 @@ class Cable(TopLevelGraphicalComponent):
                     "Must specify wirecount or colors (implicit length)"
                 )
             self.wirecount = len(self.colors)
+
+        if isinstance(self.gauge, list):
+            if len(self.gauge) not in (1, self.wirecount):
+                raise Exception("lists of gauge must be length 1 or match wirecount")
 
         if self.wirelabels:
             if self.shield and "s" in self.wirelabels:
@@ -726,7 +749,7 @@ class Cable(TopLevelGraphicalComponent):
                 # inheritable from parent cable
                 type=self.type,
                 subtype=self.subtype,
-                gauge=self.gauge,
+                gauge=self._get_wire_gauge(wire_index),
                 length=self.length,
                 sum_amounts_in_bom=self.sum_amounts_in_bom,
                 ignore_in_bom=self.ignore_in_bom,

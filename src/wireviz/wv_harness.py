@@ -353,7 +353,7 @@ class Harness:
 
             # generate wire edges between component nodes and cable nodes
             for connection in cable._connections:
-                color, l1, l2, r1, r2 = gv_edge_wire(self, cable, connection)
+                color, l1, l2, r1, r2, gauge = gv_edge_wire(self, cable, connection)
                 dot.attr("edge", color=color)
                 if not (l1, l2) == (None, None):
                     dot.edge(l1, l2)

@@ -12,7 +12,8 @@ connectors:
 cables:
   W1:
     category: multi-lead
-    color_code: T568A
+    # color_code: T568A
+    colors: [WH,RD,RD,RD,BK,BK,BK,BU]
     casing_color: GY
     show_name: false
     show_wirenumbers: false

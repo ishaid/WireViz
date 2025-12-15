@@ -430,7 +430,9 @@ def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
     return wire_outer_cell
 
 
-def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
+def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str, float]:
+    gauge_value = connection.via.gauge.number if connection.via.gauge else 1
+    gauge = gauge_value / 22
     if connection.via.color:
         # check if it's an actual wire and not a shield
         color = f"#000000:{connection.via.color.html_padded}:#000000"
@@ -462,7 +464,7 @@ def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
     else:
         code_right_1, code_right_2 = None, None
 
-    return color, code_left_1, code_left_2, code_right_1, code_right_2
+    return color, code_left_1, code_left_2, code_right_1, code_right_2, gauge
 
 
 def parse_arrow_str(inp: str) -> ArrowDirection:
