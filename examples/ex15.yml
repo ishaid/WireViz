@@ -23,7 +23,7 @@ cables:
     shield: false
     type: CAT5e
     image:
-      src: cat5-section.png
+      src: resources/cat6-section.png
       width: 80
 
 connections:
