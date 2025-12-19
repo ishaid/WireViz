@@ -59,6 +59,7 @@ def get_color_by_colorcode_index(color_code: str, index: int) -> str:
 class SingleColor:
     _code_en: str
     _html: str
+    _gauge: int
 
     @property
     def code_en(self):
@@ -106,7 +107,7 @@ class SingleColor:
 
     @property
     def html_padded(self):
-        return ":".join([self.html] * padding_amount)
+        return ":".join([self.html] * 3)
 
     def __bool__(self):
         return self._code_en is not None

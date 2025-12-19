@@ -5,6 +5,7 @@ import warnings
 from itertools import zip_longest
 from types import SimpleNamespace
 from typing import Any, List, Optional, Tuple, Union
+from math import floor, ceil
 
 from wireviz import APP_NAME, APP_URL, __version__
 from wireviz.wv_bom import partnumbers2list
@@ -415,7 +416,9 @@ def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
             "height": 2,
         }
         wire_inner_rows.append(Tr(Td("", **wire_inner_cell_attribs)))
-    wire_inner_table = Table(wire_inner_rows, border=0, cellborder=0, cellspacing=0)
+    wire_inner_table = Table(
+        wire_inner_rows, border=0, cellborder=0, cellspacing=0, cellpadding=0
+    )
     wire_outer_cell_attribs = {
         "border": 0,
         "cellspacing": 0,
@@ -430,10 +433,16 @@ def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
     return wire_outer_cell
 
 def gv_multi_gauge_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
+    gauge = ceil(22/wire.gauge.number)
+    print(gauge)
+
     if wire.color:
-        color_list = ["#000000"] + wire.color.html_padded_list + ["#000000"]
+        # color_str = ":".join([wire.color.html_padded] * floor(gauge))
+        color_list = ["#000000"] + [wire.color.html_padded] * floor(gauge) + ["#000000"]
     else:
         color_list = ["#000000"]
+
+    print(color_list)
 
     wire_inner_rows = []
     for j, bgcolor in enumerate(color_list[::-1]):
@@ -445,7 +454,9 @@ def gv_multi_gauge_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) 
             "height": 2,
         }
         wire_inner_rows.append(Tr(Td("", **wire_inner_cell_attribs)))
-    wire_inner_table = Table(wire_inner_rows, border=0, cellborder=0, cellspacing=0)
+    wire_inner_table = Table(
+        wire_inner_rows, border=0, cellborder=0, cellspacing=0, cellpadding=0
+    )
     wire_outer_cell_attribs = {
         "border": 0,
         "cellspacing": 0,
@@ -461,11 +472,12 @@ def gv_multi_gauge_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) 
 
 def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str, float]:
     gauge_value = connection.via.gauge.number if connection.via.gauge else 1
-    gauge = str(gauge_value / 11)
-    print(gauge_value)
+    gauge = ceil(22/gauge_value)
+    print(gauge)
+
     if connection.via.color:
-        # check if it's an actual wire and not a shield
-        color = f"#000000:{connection.via.color.html_padded}:#000000"
+        color_str = ":".join([str(connection.via.color.html_padded)] * floor(gauge))
+        color = f"#000000:{color_str}:#000000"
     else:  # it's a shield connection
         color = "#000000"
 

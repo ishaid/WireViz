@@ -357,9 +357,9 @@ class Harness:
                 print(f"color:{color}, l1:{l1}, l2:{l2}, r1:{r1}, r2:{r2}, gauge:{gauge}")
                 dot.attr("edge", color=color)
                 if not (l1, l2) == (None, None):
-                    dot.edge(l1, l2, penwidth=gauge)
+                    dot.edge(l1, l2)
                 if not (r1, r2) == (None, None):
-                    dot.edge(r1, r2, penwidth=gauge)
+                    dot.edge(r1, r2)
 
         for mate in self.mates:
             color, dir, code_from, code_to = gv_edge_mate(mate)
