@@ -24,7 +24,7 @@ from wireviz.wv_dataclasses import (
     WireClass,
 )
 from wireviz.wv_html import Img, Table, Td, Tr
-from wireviz.wv_utils import html_line_breaks, remove_links
+from wireviz.wv_utils import NumberAndUnit, html_line_breaks, remove_links
 
 
 def gv_node_component(component: Component) -> Table:
@@ -344,7 +344,7 @@ def gv_conductor_table(cable) -> Table:
         rows.append(Tr(cells_above))
 
         # the wire itself
-        rows.append(Tr(gv_multi_gauge_wire_cell(wire, len(cells_above))))
+        rows.append(Tr(gv_wire_cell(wire, len(cells_above))))
 
         # row below the wire
         if wire.partnumbers:
@@ -385,64 +385,35 @@ def gv_multi_lead_conductor_table(cable) -> Table:
             "multi-lead cables should define a 'casing_color'; defaulting to white."
         )
 
+    # wire guage is set to the gauge of the thickes wire
+    gauge = lowest = min(x.number for x in cable.gauge)
+
     wireinfo = []
     if cable.show_wirecount and cable.wirecount:
         wireinfo.append(f"{cable.wirecount}x")
     if casing_color:
         wireinfo.append(str(casing_color))
-
+    
+    # the wire itself
     rows.append(Tr([Td(cable.type)]))   
 
-    wire_stub = SimpleNamespace(color=casing_color, index=0)
+    # row below the wire
+    wire_stub = SimpleNamespace(color=casing_color, gauge=NumberAndUnit(gauge, 'AWG'), index=0)
     rows.append(Tr(gv_wire_cell(wire_stub, 1)))
 
     rows.append(Tr(Td("&nbsp;")))
     return Table(rows, border=0, cellborder=0, cellspacing=0)
 
-
 def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
-    if wire.color:
-        color_list = ["#FF0000"] + wire.color.html_padded_list + ["#0000FF"]
-    else:
-        color_list = ["#00FF00"]
-
-    wire_inner_rows = []
-    for j, bgcolor in enumerate(color_list[::-1]):
-        wire_inner_cell_attribs = {
-            "bgcolor": bgcolor if bgcolor != "" else "#00FF00",
-            "border": 0,
-            "cellpadding": 0,
-            "colspan": colspan,
-            "height": 2,
-        }
-        wire_inner_rows.append(Tr(Td("", **wire_inner_cell_attribs)))
-    wire_inner_table = Table(
-        wire_inner_rows, border=0, cellborder=0, cellspacing=0, cellpadding=0
-    )
-    wire_outer_cell_attribs = {
-        "border": 0,
-        "cellspacing": 0,
-        "cellpadding": 0,
-        "colspan": colspan,
-        "height": 2 * len(color_list),
-        "port": f"w{wire.index+1}",
-    }
-    # ports in GraphViz are 1-indexed for more natural maping to pin/wire numbers
-    wire_outer_cell = Td(wire_inner_table, **wire_outer_cell_attribs)
-
-    return wire_outer_cell
-
-def gv_multi_gauge_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
     gauge = ceil(22/wire.gauge.number)
-    print(gauge)
 
     if wire.color:
         # color_str = ":".join([wire.color.html_padded] * floor(gauge))
-        color_list = ["#000000"] + [wire.color.html_padded] * floor(gauge) + ["#000000"]
+        color_list = ["#000000", *(wire.color.html_padded.split(':') * floor(gauge)), "#000000"]
     else:
         color_list = ["#000000"]
 
-    print(color_list)
+    print(f"color list: {color_list}")
 
     wire_inner_rows = []
     for j, bgcolor in enumerate(color_list[::-1]):
@@ -473,13 +444,14 @@ def gv_multi_gauge_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) 
 def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str, float]:
     gauge_value = connection.via.gauge.number if connection.via.gauge else 1
     gauge = ceil(22/gauge_value)
-    print(gauge)
 
     if connection.via.color:
         color_str = ":".join([str(connection.via.color.html_padded)] * floor(gauge))
         color = f"#000000:{color_str}:#000000"
     else:  # it's a shield connection
         color = "#000000"
+
+    print(f"color: {color}")
 
     port_index = 1 if cable.category == "multi-lead" else connection.via.index + 1
 
@@ -506,7 +478,7 @@ def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str, f
     else:
         code_right_1, code_right_2 = None, None
 
-    return color, code_left_1, code_left_2, code_right_1, code_right_2, gauge
+    return color, code_left_1, code_left_2, code_right_1, code_right_2
 
 
 def parse_arrow_str(inp: str) -> ArrowDirection:

@@ -110,9 +110,33 @@ def parse_number_and_unit(
 
 
 def parse_number_and_unit_allow_list(
-    inp: Optional[Union[List[Union[NumberAndUnit, float, int, str]], NumberAndUnit, float, int, str]],
+    inp: Optional[
+        Union[
+            List[Union[float, int, str]],
+            NumberAndUnit,
+            float,
+            int,
+            str,
+        ]
+    ],
     default_unit: Optional[str] = None,
 ) -> Optional[Union[NumberAndUnit, List[NumberAndUnit]]]:
+    if isinstance(inp, str):
+        match = re.match(r"^\\s*\\[(?P<values>[^\\]]+)\\]\\s+(?P<unit>\\S+)\\s*$", inp)
+        if match:
+            raw_values = [v.strip() for v in match.group("values").split(",")]
+            if any(v == "" for v in raw_values):
+                raise Exception("List must contain at least one numeric value")
+            unit_override = match.group("unit")
+            parsed_values = []
+            for value in raw_values:
+                if " " in value:
+                    raise Exception(
+                        "List values must be numbers; specify a unit once at the end."
+                    )
+                parsed_values.append(parse_number_and_unit(value, unit_override))
+            return parsed_values
+
     if isinstance(inp, list):
         if len(inp) == 0:
             raise Exception("List must contain at least one value")
@@ -131,7 +155,19 @@ def parse_number_and_unit_allow_list(
                 if len(inp) == 0:
                     raise Exception("List must contain at least one numeric value")
 
-        return [parse_number_and_unit(value, unit_override) for value in inp]
+        parsed_values = []
+        for value in inp:
+            if isinstance(value, NumberAndUnit):
+                raise Exception(
+                    "List values must be numbers; specify a unit once at the end."
+                )
+            if isinstance(value, str) and " " in value:
+                raise Exception(
+                    "List values must be numbers; specify a unit once at the end."
+                )
+            parsed_values.append(parse_number_and_unit(value, unit_override))
+
+        return parsed_values
 
     return parse_number_and_unit(inp, default_unit)
 

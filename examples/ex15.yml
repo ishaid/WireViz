@@ -1,9 +1,10 @@
-# Example 7: Crossover Cable
+# Example 15: Multi-lead Ethernet cable
 connectors:
   X1:
     type: RJ45
     subtype: male
-    pinlabels: [DA+,DA-,DB+,DC+,DC-,DB-,DD+,DD-] # pincount is implicit in pinout
+    pinlabels: [DB+,DB-,DA+,DD+,DD-,DA-,DC+,DC-]
+
   X2:
     type: RJ45
     subtype: male
@@ -12,14 +13,13 @@ connectors:
 cables:
   W1:
     category: multi-lead
-    # color_code: T568A
-    colors: [WH,RD,RD,RD,BK,BK,BK,BU]
+    color_code: T568A
     casing_color: GY
     show_name: false
     show_wirenumbers: false
-    wirecount: 8 # need to specify number of wires explicitly when using a color code
-    gauge: 24 AWG # also accepts AWG as unit
-    length: 1 # length in m
+    wirecount: 8 
+    gauge: 24 AWG
+    length: 1 
     shield: false
     type: CAT5e
     image:
@@ -29,4 +29,4 @@ cables:
 connections:
   - - X1: [1-8]
     - W1: [1-8]
-    - X2: [1-8] # crossover
+    - X2: [1-8]

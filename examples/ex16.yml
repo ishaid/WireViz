@@ -2,20 +2,22 @@ connectors:
   X1:
     type: Molex KK 254 # more information
     subtype: female
-    pinlabels: [GND, VCC, RX, TX] # pincount is implicit in pinout
+    pinlabels: [GND, VCC, CAN_H, CAN_L] # pincount is implicit in pinout
   X2:
     type: Molex KK 254
     subtype: female
-    pinlabels: [GND, VCC, RX, TX]
+    pinlabels: [GND, VCC, CAN_H, CAN_L]
 
 cables:
   W1:
-    color_code: IEC # auto-color wires based on a standard
+    category: multi-lead
+    colors: [BK, RD, YE, OL]
+    casing_color: GY
     wirecount: 4 # need to specify number of wires explicitly when using a color code
-    gauge: [16 AWG, 16 AWG, 28 AWG, 22 AWG] # also accepts AWG as unit
+    gauge: [10, 10, 28, 22] AWG # also accepts AWG as unit
     show_equiv: true # auto-calculate AWG equivalent from metric gauge
     length: 0.2 # length in m
-    type: Serial
+    type: CAN
 
 connections:
   -

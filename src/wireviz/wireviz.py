@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import platform
+import re
 import sys
 from errno import EINVAL, ENAMETOOLONG
 from pathlib import Path
@@ -23,6 +24,12 @@ from wireviz.wv_utils import (
 )
 
 from . import APP_NAME
+
+_GAUGE_LIST_WITH_UNIT_RE = re.compile(
+    r"^(?P<indent>\s*gauge\s*:\s*)\[(?P<values>[^\]]+)\]\s+"
+    r"(?P<unit>[^#\s]+)(?P<comment>\s*#.*)?$",
+    re.MULTILINE,
+)
 
 
 def parse(
@@ -436,6 +443,10 @@ def _get_yaml_data_and_path(inp: Union[str, Path, Dict]) -> Tuple[Dict, Path]:
             # file does not exist; assume inp is a YAML string
             yaml_str = inp
             yaml_path = None
+        if isinstance(yaml_str, str):
+            yaml_str = _GAUGE_LIST_WITH_UNIT_RE.sub(
+                r"\g<indent>[\g<values>, \g<unit>]\g<comment>", yaml_str
+            )
         yaml_data = yaml.safe_load(yaml_str)
     else:
         # received a Dict, use as-is

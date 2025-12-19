@@ -103,8 +103,8 @@ tweak:  # optional tweaking of .gv output
                           # <int/float>      is assumed to be mm2
                           # <str>            custom units and formats are allowed
                           #                  but unavailable for auto-conversion
-                          # a list of values is allowed to define gauges per wire;
-                          # e.g. [20, 22, awg] applies AWG to each entry and must
+                          # a list of numbers is allowed to define gauges per wire;
+                          # e.g. [20, 22, awg] or [20, 22] AWG applies AWG to each entry and must
                           # either have one value or one value per wire
   show_equiv: <bool>      # defaults to false; can auto-convert between mm2 and AWG
                           # and display the result when set to true
