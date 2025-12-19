@@ -343,7 +343,7 @@ def gv_conductor_table(cable) -> Table:
         rows.append(Tr(cells_above))
 
         # the wire itself
-        rows.append(Tr(gv_wire_cell(wire, len(cells_above))))
+        rows.append(Tr(gv_multi_gauge_wire_cell(wire, len(cells_above))))
 
         # row below the wire
         if wire.partnumbers:
@@ -401,6 +401,36 @@ def gv_multi_lead_conductor_table(cable) -> Table:
 
 def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
     if wire.color:
+        color_list = ["#FF0000"] + wire.color.html_padded_list + ["#0000FF"]
+    else:
+        color_list = ["#00FF00"]
+
+    wire_inner_rows = []
+    for j, bgcolor in enumerate(color_list[::-1]):
+        wire_inner_cell_attribs = {
+            "bgcolor": bgcolor if bgcolor != "" else "#00FF00",
+            "border": 0,
+            "cellpadding": 0,
+            "colspan": colspan,
+            "height": 2,
+        }
+        wire_inner_rows.append(Tr(Td("", **wire_inner_cell_attribs)))
+    wire_inner_table = Table(wire_inner_rows, border=0, cellborder=0, cellspacing=0)
+    wire_outer_cell_attribs = {
+        "border": 0,
+        "cellspacing": 0,
+        "cellpadding": 0,
+        "colspan": colspan,
+        "height": 2 * len(color_list),
+        "port": f"w{wire.index+1}",
+    }
+    # ports in GraphViz are 1-indexed for more natural maping to pin/wire numbers
+    wire_outer_cell = Td(wire_inner_table, **wire_outer_cell_attribs)
+
+    return wire_outer_cell
+
+def gv_multi_gauge_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
+    if wire.color:
         color_list = ["#000000"] + wire.color.html_padded_list + ["#000000"]
     else:
         color_list = ["#000000"]
@@ -429,10 +459,10 @@ def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
 
     return wire_outer_cell
 
-
 def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str, float]:
     gauge_value = connection.via.gauge.number if connection.via.gauge else 1
-    gauge = gauge_value / 22
+    gauge = str(gauge_value / 11)
+    print(gauge_value)
     if connection.via.color:
         # check if it's an actual wire and not a shield
         color = f"#000000:{connection.via.color.html_padded}:#000000"
@@ -505,7 +535,6 @@ def gv_edge_mate(mate) -> Tuple[str, str, str, str]:
     code_to = f"{to_designator}{to_port_str}:w"
 
     return color, dir, code_from, code_to
-
 
 def colorbar_cells(color, mini=False) -> List[Td]:
     cells = []
