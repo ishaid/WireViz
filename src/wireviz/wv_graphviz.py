@@ -24,7 +24,7 @@ from wireviz.wv_dataclasses import (
     WireClass,
 )
 from wireviz.wv_html import Img, Table, Td, Tr
-from wireviz.wv_utils import NumberAndUnit, html_line_breaks, remove_links
+from wireviz.wv_utils import NumberAndUnit, html_line_breaks, remove_links, awg_equiv, mm2_equiv, get_visual_gauge
 
 
 def gv_node_component(component: Component) -> Table:
@@ -302,7 +302,6 @@ def gv_connector_loops(connector: Connector) -> List:
         loop_edges.append((head, tail))
     return loop_edges
 
-
 def gv_conductor_table(cable) -> Table:
     if cable.category == "multi-lead":
         return gv_multi_lead_conductor_table(cable)
@@ -344,7 +343,7 @@ def gv_conductor_table(cable) -> Table:
         rows.append(Tr(cells_above))
 
         # the wire itself
-        rows.append(Tr(gv_wire_cell(wire, len(cells_above))))
+        rows.append(Tr(gv_wire_cell(cable=cable, wire=wire, gauge=get_visual_gauge(gauge=wire.gauge, list_gauges=cable.gauge), colspan=len(cells_above))))
 
         # row below the wire
         if wire.partnumbers:
@@ -385,8 +384,9 @@ def gv_multi_lead_conductor_table(cable) -> Table:
             "multi-lead cables should define a 'casing_color'; defaulting to white."
         )
 
-    # wire guage is set to the gauge of the thickes wire
-    gauge = lowest = min(x.number for x in cable.gauge)
+    # Guage is set to be the thickness of the thickes wire
+    # gauge = min(x.number for x in cable.gauge) - 4
+    gauge = max(get_visual_gauge(gauge=x, list_gauges=cable.gauge) for x in cable.gauge) + 1
 
     wireinfo = []
     if cable.show_wirecount and cable.wirecount:
@@ -398,14 +398,17 @@ def gv_multi_lead_conductor_table(cable) -> Table:
     rows.append(Tr([Td(cable.type)]))   
 
     # row below the wire
-    wire_stub = SimpleNamespace(color=casing_color, gauge=NumberAndUnit(gauge, 'AWG'), index=0)
-    rows.append(Tr(gv_wire_cell(wire_stub, 1)))
+    # wire_stub = SimpleNamespace(color=casing_color, gauge=NumberAndUnit(gauge, 'AWG'), index=0)
+    wire_stub = SimpleNamespace(color=casing_color, index=0)
+    rows.append(Tr(gv_wire_cell(cable=cable, wire=wire_stub, gauge=gauge, colspan=1)))
 
     rows.append(Tr(Td("&nbsp;")))
     return Table(rows, border=0, cellborder=0, cellspacing=0)
 
-def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
-    gauge = ceil(22/wire.gauge.number)
+def gv_wire_cell(cable, wire: Union[WireClass, ShieldClass], gauge: int, colspan: int) -> Td:
+    # gauge = ceil(22/wire.gauge.number)
+    # gauge = get_visual_gauge(list_gauges=cable.gauge, gauge=wire.gauge)
+    gauge=gauge
 
     if wire.color:
         # color_str = ":".join([wire.color.html_padded] * floor(gauge))
@@ -413,7 +416,6 @@ def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
     else:
         color_list = ["#000000"]
 
-    print(f"color list: {color_list}")
 
     wire_inner_rows = []
     for j, bgcolor in enumerate(color_list[::-1]):
@@ -443,15 +445,14 @@ def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
 
 def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str, float]:
     gauge_value = connection.via.gauge.number if connection.via.gauge else 1
-    gauge = ceil(22/gauge_value)
+    # gauge = ceil(22/gauge_value)
+    gauge = get_visual_gauge(gauge=connection.via.gauge, list_gauges=cable.gauge)
 
     if connection.via.color:
         color_str = ":".join([str(connection.via.color.html_padded)] * floor(gauge))
         color = f"#000000:{color_str}:#000000"
     else:  # it's a shield connection
         color = "#000000"
-
-    print(f"color: {color}")
 
     port_index = 1 if cable.category == "multi-lead" else connection.via.index + 1
 

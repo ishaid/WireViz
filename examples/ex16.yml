@@ -11,10 +11,11 @@ connectors:
 cables:
   W1:
     category: multi-lead
-    colors: [BK, RD, YE, OL]
+    colors: [BK, RD, YE, GN]
     casing_color: GY
     wirecount: 4 # need to specify number of wires explicitly when using a color code
-    gauge: [10, 10, 28, 22] AWG # also accepts AWG as unit
+    # gauge: [10, 10, 28, 22] AWG # also accepts AWG as unit
+    gauge: [28,26,24,22] AWG
     show_equiv: true # auto-calculate AWG equivalent from metric gauge
     length: 0.2 # length in m
     type: CAN

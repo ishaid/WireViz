@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import math
 import re
 from collections import namedtuple
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Iterable, Literal
 
 NumberAndUnit = namedtuple("NumberAndUnit", "number unit")
 
@@ -33,7 +34,14 @@ def awg_equiv(mm2):
     return awg_equiv_table.get(str(mm2), "Unknown")
 
 
-def mm2_equiv(awg):
+def mm2_equiv(awg: float | NumberAndUnit):
+    if isinstance(awg, NumberAndUnit):
+        if awg.unit == "mm2":
+            return awg.number
+        elif awg.unit == "AWG":
+            awg = awg.number
+        else:
+            raise ValueError("Unkown unit")
     return mm2_equiv_table.get(str(awg), "Unknown")
 
 
@@ -304,3 +312,79 @@ def check_old(node: str, old_attr: dict, args: dict) -> None:
     for attr, descr in old_attr.items():
         if attr in args:
             raise ValueError(f"'{attr}' in {node}: '{attr}' {descr}")
+
+def get_visual_gauge(
+    list_gauges: Iterable[NumberAndUnit],
+    gauge: NumberAndUnit,
+) -> int:
+    """Return drawing width in {1..4}. Convention: 4=thickest, 1=thinnest."""
+
+    def num(val: NumberAndUnit) -> float:
+        return val.number if isinstance(val, NumberAndUnit) else val
+
+    vals = list(list_gauges)
+    unit = gauge.unit.lower() if isinstance(gauge.unit, str) else gauge.unit
+
+    # Metric must be "bigger = thicker" in both systems.
+    if unit == "awg":
+        norm = lambda x: int(num(x))
+        # Use inverse AWG so "bigger = thicker" holds without lookup table gaps.
+        metric = lambda g: -int(num(g))
+    else:  # "mm2"
+        norm = lambda x: float(num(x))
+        metric = lambda g: float(num(g))  # already thickness
+
+    uniq = sorted({norm(x) for x in vals}, key=metric, reverse=True)  # thick -> thin
+    n = len(uniq)
+    k = min(4, n)
+    if k == 1:
+        return 2
+
+    m = [metric(g) for g in uniq]  # non-increasing
+
+    cost = [[0.0] * n for _ in range(n)]
+    for i in range(n):
+        mi = m[i]
+        for j in range(i, n):
+            r = mi - m[j]
+            cost[i][j] = r * r
+
+    INF = float("inf")
+    dp = [[INF] * n for _ in range(k + 1)]
+    prev = [[-1] * n for _ in range(k + 1)]
+
+    for j in range(n):
+        dp[1][j] = cost[0][j]
+
+    for t in range(2, k + 1):
+        for j in range(t - 1, n):
+            best, best_m = INF, -1
+            for mid in range(t - 2, j):
+                cand = dp[t - 1][mid] + cost[mid + 1][j]
+                if cand < best:
+                    best, best_m = cand, mid
+            dp[t][j], prev[t][j] = best, best_m
+
+    group_of = {}
+    j, t = n - 1, k
+    segments = []
+    while t:
+        mid = prev[t][j]
+        segments.append((mid + 1, j))
+        j, t = mid, t - 1
+    segments.reverse()
+
+    for gi, (a, b) in enumerate(segments):
+        for idx in range(a, b + 1):
+            group_of[uniq[idx]] = gi
+
+    widths = [
+        max(1, min(4, int(math.floor(4 - (r / (k - 1)) * 3 + 0.5))))
+        for r in range(k)
+    ]
+
+    target = norm(gauge)
+    if target not in group_of:
+        target = min(uniq, key=lambda g: abs(metric(g) - metric(gauge)))
+
+    return widths[group_of[target]]
