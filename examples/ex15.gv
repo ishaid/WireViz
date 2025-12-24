@@ -30,35 +30,35 @@ graph {
   <td>
    <table border="0" cellborder="1" cellpadding="3" cellspacing="0">
     <tr>
-     <td>DA+</td>
+     <td>DB+</td>
      <td port="p1r">1</td>
     </tr>
     <tr>
-     <td>DA-</td>
+     <td>DB-</td>
      <td port="p2r">2</td>
     </tr>
     <tr>
-     <td>DB+</td>
+     <td>DA+</td>
      <td port="p3r">3</td>
     </tr>
     <tr>
-     <td>DC+</td>
+     <td>DD+</td>
      <td port="p4r">4</td>
     </tr>
     <tr>
-     <td>DC-</td>
+     <td>DD-</td>
      <td port="p5r">5</td>
     </tr>
     <tr>
-     <td>DB-</td>
+     <td>DA-</td>
      <td port="p6r">6</td>
     </tr>
     <tr>
-     <td>DD+</td>
+     <td>DC+</td>
      <td port="p7r">7</td>
     </tr>
     <tr>
-     <td>DD-</td>
+     <td>DC-</td>
      <td port="p8r">8</td>
     </tr>
    </table>
@@ -135,7 +135,6 @@ graph {
    <table border="0" cellborder="1" cellpadding="3" cellspacing="0">
     <tr>
      <td>CAT5e</td>
-     <td>8x</td>
      <td>24 AWG</td>
      <td>1 m</td>
     </tr>
@@ -152,10 +151,34 @@ graph {
      <td>CAT5e</td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="1" height="6" port="w1">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="1" height="22" port="w1">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="1" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="1" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="1" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="1" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="1" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="1" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="1" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="1" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="1" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#999999" border="0" cellpadding="0" colspan="1" height="2"></td>
@@ -189,28 +212,28 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
-	edge [color="#000000:#FFFFFF:#000000"]
+	edge [color="#000000:#FFFFFF:#00AA00:#FFFFFF:#FFFFFF:#00AA00:#FFFFFF:#000000"]
 	X1:p1r:e -- W1:w1:w
 	W1:w1:e -- X2:p1l:w
-	edge [color="#000000:#FF0000:#000000"]
+	edge [color="#000000:#00AA00:#00AA00:#00AA00:#00AA00:#00AA00:#00AA00:#000000"]
 	X1:p2r:e -- W1:w1:w
 	W1:w1:e -- X2:p2l:w
-	edge [color="#000000:#FF0000:#000000"]
+	edge [color="#000000:#FFFFFF:#FF8000:#FFFFFF:#FFFFFF:#FF8000:#FFFFFF:#000000"]
 	X1:p3r:e -- W1:w1:w
 	W1:w1:e -- X2:p3l:w
-	edge [color="#000000:#FF0000:#000000"]
+	edge [color="#000000:#0066FF:#0066FF:#0066FF:#0066FF:#0066FF:#0066FF:#000000"]
 	X1:p4r:e -- W1:w1:w
 	W1:w1:e -- X2:p4l:w
-	edge [color="#000000:#000000:#000000"]
+	edge [color="#000000:#FFFFFF:#0066FF:#FFFFFF:#FFFFFF:#0066FF:#FFFFFF:#000000"]
 	X1:p5r:e -- W1:w1:w
 	W1:w1:e -- X2:p5l:w
-	edge [color="#000000:#000000:#000000"]
+	edge [color="#000000:#FF8000:#FF8000:#FF8000:#FF8000:#FF8000:#FF8000:#000000"]
 	X1:p6r:e -- W1:w1:w
 	W1:w1:e -- X2:p6l:w
-	edge [color="#000000:#000000:#000000"]
+	edge [color="#000000:#FFFFFF:#895956:#FFFFFF:#FFFFFF:#895956:#FFFFFF:#000000"]
 	X1:p7r:e -- W1:w1:w
 	W1:w1:e -- X2:p7l:w
-	edge [color="#000000:#0066FF:#000000"]
+	edge [color="#000000:#895956:#895956:#895956:#895956:#895956:#895956:#000000"]
 	X1:p8r:e -- W1:w1:w
 	W1:w1:e -- X2:p8l:w
 }

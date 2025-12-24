@@ -55,11 +55,14 @@ def gv_node_component(component: Component) -> Table:
             str(component.color) if component.color else None,
         ]
     elif isinstance(component, Cable):
+        gauge_str = component.gauge_str_with_equiv
+        if isinstance(component.gauge, list) and len(component.gauge) > 1:
+            gauge_str = component.gauge_str
         line_info = [
             bom_bubble(component.bom_id) if component.category != "bundle" else None,
             html_line_breaks(component.type),
-            f"{component.wirecount}x" if component.show_wirecount else None,
-            component.gauge_str_with_equiv,
+            f"{component.wirecount}x" if component.show_wirecount and component.category != "multi-lead" else None,
+            gauge_str,
             "+ S" if component.shield else None,
             component.length_str,
             str(component.color) if component.color else None,
@@ -385,12 +388,15 @@ def gv_multi_lead_conductor_table(cable) -> Table:
         )
 
     # Guage is set to be the thickness of the thickes wire
-    # gauge = min(x.number for x in cable.gauge) - 4
-    gauge = max(get_visual_gauge(gauge=x, list_gauges=cable.gauge) for x in cable.gauge) + 1
+    gauge_list = cable.gauge if isinstance(cable.gauge, list) else [cable.gauge]
+    gauge = max(
+        get_visual_gauge(gauge=x, list_gauges=gauge_list) for x in gauge_list
+    ) + 1
 
     wireinfo = []
     if cable.show_wirecount and cable.wirecount:
         wireinfo.append(f"{cable.wirecount}x")
+
     if casing_color:
         wireinfo.append(str(casing_color))
     

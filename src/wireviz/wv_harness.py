@@ -70,7 +70,9 @@ class Harness:
         new_item = AdditionalBomItem(**item)
         self.additional_bom_items.append(new_item)
 
-    def add_mate_pin(self, from_name, from_pin, to_name, to_pin, arrow_str, gauge) -> None:
+    def add_mate_pin(
+        self, from_name, from_pin, to_name, to_pin, arrow_str, gauge=None
+    ) -> None:
         from_con = self.connectors[from_name]
         from_pin_obj = from_con.pin_objects[from_pin]
         to_con = self.connectors[to_name]

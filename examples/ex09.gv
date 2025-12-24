@@ -345,10 +345,19 @@ graph {
      <td align="right">X2:z2 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w1">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w1">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FFFFFF" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FFFFFF" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FFFFFF" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#FFFFFF" border="0" cellpadding="0" colspan="5" height="2"></td>
@@ -373,10 +382,19 @@ graph {
      <td align="right">X2:d4 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w2">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w2">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#895956" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#895956" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#895956" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#895956" border="0" cellpadding="0" colspan="5" height="2"></td>
@@ -401,10 +419,19 @@ graph {
      <td align="right">X2:z8 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w3">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w3">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#00AA00" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#00AA00" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#00AA00" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#00AA00" border="0" cellpadding="0" colspan="5" height="2"></td>
@@ -429,10 +456,19 @@ graph {
      <td align="right">X2:d10 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w4">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w4">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FFFF00" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FFFF00" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FFFF00" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#FFFF00" border="0" cellpadding="0" colspan="5" height="2"></td>
@@ -457,10 +493,19 @@ graph {
      <td align="right">X2:z14 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w5">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w5">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#999999" border="0" cellpadding="0" colspan="5" height="2"></td>
@@ -485,10 +530,19 @@ graph {
      <td align="right">X2:d16 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w6">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w6">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FF66CC" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FF66CC" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FF66CC" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#FF66CC" border="0" cellpadding="0" colspan="5" height="2"></td>
@@ -513,10 +567,19 @@ graph {
      <td align="right">X2:z18 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w7">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w7">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#0066FF" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#0066FF" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#0066FF" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#0066FF" border="0" cellpadding="0" colspan="5" height="2"></td>
@@ -541,10 +604,19 @@ graph {
      <td align="right">X2:d20 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w8">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w8">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FF0000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FF0000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FF0000" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#FF0000" border="0" cellpadding="0" colspan="5" height="2"></td>
@@ -569,8 +641,17 @@ graph {
      <td align="right">X2:z24 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w9">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w9">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
+       <tr>
+        <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
@@ -597,10 +678,19 @@ graph {
      <td align="right">X2:d26 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w10">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w10">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#8000FF" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#8000FF" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#8000FF" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#8000FF" border="0" cellpadding="0" colspan="5" height="2"></td>
@@ -625,10 +715,19 @@ graph {
      <td align="right">X2:z30 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w11">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w11">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FF66CC" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#999999" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#999999" border="0" cellpadding="0" colspan="5" height="2"></td>
@@ -653,10 +752,19 @@ graph {
      <td align="right">X2:d32 </td>
     </tr>
     <tr>
-     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="10" port="w12">
-      <table border="0" cellborder="0" cellspacing="0">
+     <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="16" port="w12">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FF0000" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#0066FF" border="0" cellpadding="0" colspan="5" height="2"></td>
+       </tr>
+       <tr>
+        <td bgcolor="#FF0000" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
        <tr>
         <td bgcolor="#FF0000" border="0" cellpadding="0" colspan="5" height="2"></td>
@@ -685,7 +793,7 @@ graph {
     </tr>
     <tr>
      <td border="0" cellspacing="0" cellpadding="0" colspan="5" height="2" port="w13">
-      <table border="0" cellborder="0" cellspacing="0">
+      <table border="0" cellborder="0" cellspacing="0" cellpadding="0">
        <tr>
         <td bgcolor="#000000" border="0" cellpadding="0" colspan="5" height="2"></td>
        </tr>
@@ -700,40 +808,40 @@ graph {
  </tr>
 </table>
 > shape=box style=filled]
-	edge [color="#000000:#895956:#895956:#895956:#000000"]
+	edge [color="#000000:#895956:#895956:#895956:#895956:#895956:#895956:#000000"]
 	X1:p1r:e -- W1:w2:w
 	W1:w2:e -- X2:p6l:w
-	edge [color="#000000:#FFFFFF:#FFFFFF:#FFFFFF:#000000"]
+	edge [color="#000000:#FFFFFF:#FFFFFF:#FFFFFF:#FFFFFF:#FFFFFF:#FFFFFF:#000000"]
 	X1:p2r:e -- W1:w1:w
 	W1:w1:e -- X2:p1l:w
-	edge [color="#000000:#FFFF00:#FFFF00:#FFFF00:#000000"]
+	edge [color="#000000:#FFFF00:#FFFF00:#FFFF00:#FFFF00:#FFFF00:#FFFF00:#000000"]
 	X1:p3r:e -- W1:w4:w
 	W1:w4:e -- X2:p15l:w
-	edge [color="#000000:#00AA00:#00AA00:#00AA00:#000000"]
+	edge [color="#000000:#00AA00:#00AA00:#00AA00:#00AA00:#00AA00:#00AA00:#000000"]
 	X1:p4r:e -- W1:w3:w
 	W1:w3:e -- X2:p10l:w
-	edge [color="#000000:#FF66CC:#FF66CC:#FF66CC:#000000"]
+	edge [color="#000000:#FF66CC:#FF66CC:#FF66CC:#FF66CC:#FF66CC:#FF66CC:#000000"]
 	X1:p5r:e -- W1:w6:w
 	W1:w6:e -- X2:p24l:w
-	edge [color="#000000:#999999:#999999:#999999:#000000"]
+	edge [color="#000000:#999999:#999999:#999999:#999999:#999999:#999999:#000000"]
 	X1:p6r:e -- W1:w5:w
 	W1:w5:e -- X2:p19l:w
-	edge [color="#000000:#FF0000:#FF0000:#FF0000:#000000"]
+	edge [color="#000000:#FF0000:#FF0000:#FF0000:#FF0000:#FF0000:#FF0000:#000000"]
 	X1:p7r:e -- W1:w8:w
 	W1:w8:e -- X2:p30l:w
-	edge [color="#000000:#0066FF:#0066FF:#0066FF:#000000"]
+	edge [color="#000000:#0066FF:#0066FF:#0066FF:#0066FF:#0066FF:#0066FF:#000000"]
 	X1:p8r:e -- W1:w7:w
 	W1:w7:e -- X2:p25l:w
-	edge [color="#000000:#8000FF:#8000FF:#8000FF:#000000"]
+	edge [color="#000000:#8000FF:#8000FF:#8000FF:#8000FF:#8000FF:#8000FF:#000000"]
 	X1:p9r:e -- W1:w10:w
 	W1:w10:e -- X2:p39l:w
-	edge [color="#000000:#000000:#000000:#000000:#000000"]
+	edge [color="#000000:#000000:#000000:#000000:#000000:#000000:#000000:#000000"]
 	X1:p10r:e -- W1:w9:w
 	W1:w9:e -- X2:p34l:w
-	edge [color="#000000:#FF0000:#0066FF:#FF0000:#000000"]
+	edge [color="#000000:#FF0000:#0066FF:#FF0000:#FF0000:#0066FF:#FF0000:#000000"]
 	X1:p11r:e -- W1:w12:w
 	W1:w12:e -- X2:p48l:w
-	edge [color="#000000:#999999:#FF66CC:#999999:#000000"]
+	edge [color="#000000:#999999:#FF66CC:#999999:#999999:#FF66CC:#999999:#000000"]
 	X1:p12r:e -- W1:w11:w
 	W1:w11:e -- X2:p43l:w
 	edge [color="#000000"]

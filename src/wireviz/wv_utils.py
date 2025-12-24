@@ -130,7 +130,7 @@ def parse_number_and_unit_allow_list(
     default_unit: Optional[str] = None,
 ) -> Optional[Union[NumberAndUnit, List[NumberAndUnit]]]:
     if isinstance(inp, str):
-        match = re.match(r"^\\s*\\[(?P<values>[^\\]]+)\\]\\s+(?P<unit>\\S+)\\s*$", inp)
+        match = re.match(r"^\s*\[(?P<values>[^\]]+)\]\s+(?P<unit>\S+)\s*$", inp)
         if match:
             raw_values = [v.strip() for v in match.group("values").split(",")]
             if any(v == "" for v in raw_values):
@@ -314,15 +314,29 @@ def check_old(node: str, old_attr: dict, args: dict) -> None:
             raise ValueError(f"'{attr}' in {node}: '{attr}' {descr}")
 
 def get_visual_gauge(
-    list_gauges: Iterable[NumberAndUnit],
-    gauge: NumberAndUnit,
+    list_gauges: Optional[Iterable[NumberAndUnit]],
+    gauge: Optional[NumberAndUnit],
 ) -> int:
     """Return drawing width in {1..4}. Convention: 4=thickest, 1=thinnest."""
 
     def num(val: NumberAndUnit) -> float:
         return val.number if isinstance(val, NumberAndUnit) else val
 
-    vals = list(list_gauges)
+    if list_gauges is None:
+        vals = []
+    elif isinstance(list_gauges, NumberAndUnit):
+        vals = [list_gauges]
+    else:
+        vals = [g for g in list_gauges if g is not None]
+
+    if gauge is None:
+        if not vals:
+            return 2
+        gauge = vals[0]
+
+    if not vals:
+        vals = [gauge]
+
     unit = gauge.unit.lower() if isinstance(gauge.unit, str) else gauge.unit
 
     # Metric must be "bigger = thicker" in both systems.

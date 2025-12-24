@@ -1,11 +1,16 @@
 connectors:
   X1:
-    type: Molex KK 254 # more information
+    type: MicroFit 3.0
     subtype: female
+    manufacturer: Molex
+    mpn: 43025040
     pinlabels: [GND, VCC, CAN_H, CAN_L] # pincount is implicit in pinout
+
   X2:
-    type: Molex KK 254
+    type: MicroFit 3.0
     subtype: female
+    manufacturer: Molex
+    mpn: 43025040
     pinlabels: [GND, VCC, CAN_H, CAN_L]
 
 cables:
@@ -14,8 +19,7 @@ cables:
     colors: [BK, RD, YE, GN]
     casing_color: GY
     wirecount: 4 # need to specify number of wires explicitly when using a color code
-    # gauge: [10, 10, 28, 22] AWG # also accepts AWG as unit
-    gauge: [28,26,24,22] AWG
+    gauge: [22,22,28,28] AWG # example of multiple gauges in a single wire
     show_equiv: true # auto-calculate AWG equivalent from metric gauge
     length: 0.2 # length in m
     type: CAN
@@ -24,4 +28,4 @@ connections:
   -
     - X1: [1-4]
     - W1: [1-4]
-    - X2: [1-4] # crossover
+    - X2: [1-4] 
