@@ -101,11 +101,11 @@ class Harness:
         ]
         all_bom_relevant_items = (
             list(self.connectors.values())
-            + [cable for cable in self.cables.values() if cable.category != "bundle"]
+            + [cable for cable in self.cables.values() if cable.bom_type != "parts"]
             + [
                 wire
                 for cable in self.cables.values()
-                if cable.category == "bundle"
+                if cable.bom_type == "parts"
                 for wire in cable.wire_objects.values()
             ]
             + all_subitems
@@ -164,14 +164,14 @@ class Harness:
             if isinstance(item, Connector):
                 cat = BomCategory.CONNECTOR
             elif isinstance(item, Cable):
-                if item.category == "bundle":
+                if item.bom_type == "parts":
                     cat = BomCategory.WIRE
                 else:
                     cat = BomCategory.CABLE
             else:
                 cat = ""
 
-            if item.category == "bundle":
+            if isinstance(item, Cable) and item.bom_type == "parts":
                 # wires of a bundle are added as individual BOM entries
                 for subitem in item.wire_objects.values():
                     _add(
@@ -343,7 +343,7 @@ class Harness:
             # TODO: PN info for bundles (per wire)
             gv_html = gv_node_component(cable)
             gv_html.update_attribs(bgcolor=calculate_node_bgcolor(cable, self.options))
-            style = "filled,dashed" if cable.category == "bundle" else "filled"
+            style = "filled,dashed" if cable.visual_type == "bundle" else "filled"
             dot.node(
                 cable.designator,
                 label=f"<\n{gv_html}\n>",

@@ -54,7 +54,7 @@ def gv_node_component(component: Component) -> Table:
         ]
     elif isinstance(component, Cable):
         line_info = [
-            bom_bubble(component.bom_id) if component.category != "bundle" else None,
+            bom_bubble(component.bom_id) if component.bom_type != "parts" else None,
             html_line_breaks(component.type),
             f"{component.wirecount}x" if component.show_wirecount else None,
             component.gauge_str_with_equiv,
@@ -160,7 +160,7 @@ def calculate_node_bgcolor(component, harness_options):
         return harness_options.bgcolor_connector.html
     elif (
         isinstance(component, Cable)
-        and component.category == "bundle"
+        and component.visual_type == "bundle"
         and harness_options.bgcolor_bundle
     ):
         return harness_options.bgcolor_bundle.html
@@ -330,7 +330,7 @@ def gv_conductor_table(cable) -> Table:
         cells_above = [
             Td(" " + ", ".join(ins), align="left"),
             Td(" "),  # increase cell spacing here
-            Td(bom_bubble(wire.bom_id)) if cable.category == "bundle" else None,
+            Td(bom_bubble(wire.bom_id)) if cable.visual_type == "bundle" else None,
             Td(":".join([wi for wi in wireinfo if wi is not None and wi != ""])),
             Td(" "),  # increase cell spacing here
             Td(", ".join(outs) + " ", align="right"),
@@ -628,4 +628,4 @@ def apply_dot_tweaks(dot, tweak):
             dot.body.extend(tweak.append)
         else:
             typecheck("tweak.append", tweak.append, str)
-            dot.body.append(tweak.append)
+            dot.body

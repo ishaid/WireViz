@@ -541,6 +541,8 @@ class Connection:
 @dataclass
 class Cable(TopLevelGraphicalComponent):
     # cable-specific properties
+    visual_type: Optional[str] = None  # Determines the visual style of the cable
+    bom_type: Optional[str] = None  # Determines how the cable is shown in bom
     gauge: Optional[NumberAndUnit] = None
     length: Optional[NumberAndUnit] = None
     color_code: Optional[str] = None
@@ -599,7 +601,7 @@ class Cable(TopLevelGraphicalComponent):
 
     @property
     def bom_hash(self):
-        if self.category == "bundle":
+        if self.bom_type == "parts":
             # This line should never be reached, since caller checks
             # whether item is a bundle and if so, calls bom_hash
             # for each individual wire instead
@@ -609,7 +611,7 @@ class Cable(TopLevelGraphicalComponent):
 
     @property
     def description(self) -> str:
-        if self.category == "bundle":
+        if self.bom_type == "parts":
             raise Exception("Do this at the wire level!")
         else:
             substrs = [
@@ -631,7 +633,7 @@ class Cable(TopLevelGraphicalComponent):
             return inp[idx] if isinstance(inp, List) else inp
 
         # TODO: possibly make more robust/elegant
-        if self.category == "bundle":
+        if self.bom_type == "parts":
             return PartNumberInfo(
                 _get_correct_element(self.partnumbers.pn, idx),
                 _get_correct_element(self.partnumbers.manufacturer, idx),
@@ -644,6 +646,26 @@ class Cable(TopLevelGraphicalComponent):
 
     def __post_init__(self) -> None:
         super().__post_init__()
+
+        # Handle backward compatibility for 'category' and set new types
+        if self.category == "bundle":
+            if self.visual_type is not None or self.bom_type is not None:
+                raise ValueError(
+                    "Configuration Conflict: 'category: bundle' cannot be used with 'visual_type' or 'bom_type'. "
+                    "'category' is deprecated; please use the new parameters instead."
+                )
+            # Apply legacy mapping
+            self.visual_type = "bundle"
+            self.bom_type = "parts"
+        elif self.category is not None:
+            # You might want to warn the user about an unknown or unhandled 'category' value.
+            pass
+
+        # Set defaults for new fields if they weren't set by the user or the legacy mapping.
+        if self.visual_type is None:
+            self.visual_type = "default"
+        if self.bom_type is None:
+            self.bom_type = "top-level"
 
         self.bgcolor_title = SingleColor(self.bgcolor_title)
         self.color = MultiColor(self.color)
@@ -699,12 +721,14 @@ class Cable(TopLevelGraphicalComponent):
         # check this is a bundle and that it matches the wirecount.
         for idfield in [self.manufacturer, self.mpn, self.supplier, self.spn, self.pn]:
             if isinstance(idfield, list):
-                if self.category == "bundle":
+                if self.bom_type == "parts":
                     # check the length
                     if len(idfield) != self.wirecount:
                         raise Exception("lists of part data must match wirecount")
                 else:
-                    raise Exception("lists of part data are only supported for bundles")
+                    raise Exception(
+                        "lists of part data are only supported when bom_type is 'parts'"
+                    )
 
         # all checks have passed
         wire_tuples = zip_longest(
@@ -752,7 +776,7 @@ class Cable(TopLevelGraphicalComponent):
 
         if self.show_wirenumbers is None:
             # by default, show wire numbers for cables, hide for bundles
-            self.show_wirenumbers = self.category != "bundle"
+            self.show_wirenumbers = self.visual_type != "bundle"
 
         for i, item in enumerate(self.additional_components):
             if isinstance(item, dict):
