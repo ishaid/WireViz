@@ -31,6 +31,7 @@ from wireviz.wv_graphviz import (
     gv_connector_loops,
     gv_edge_mate,
     gv_edge_wire,
+    gv_multi_lead_edge_wire,
     gv_node_component,
     parse_arrow_str,
     set_dot_basics,
@@ -353,7 +354,10 @@ class Harness:
 
             # generate wire edges between component nodes and cable nodes
             for connection in cable._connections:
-                color, l1, l2, r1, r2 = gv_edge_wire(self, cable, connection)
+                if cable.visual_type == "multi-lead":
+                    color, l1, l2, r1, r2 = gv_multi_lead_edge_wire(self, cable, connection)
+                else:
+                    color, l1, l2, r1, r2 = gv_edge_wire(self, cable, connection)
                 dot.attr("edge", color=color)
                 if not (l1, l2) == (None, None):
                     dot.edge(l1, l2)

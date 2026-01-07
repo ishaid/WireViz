@@ -302,6 +302,12 @@ def gv_connector_loops(connector: Connector) -> List:
 
 
 def gv_conductor_table(cable) -> Table:
+    match cable.visual_type:
+        case "ribbon":
+            return gv_ribbon_conductor_table(cable)
+        case "multi-lead":
+            return gv_multi_lead_conductor_table(cable)
+
     rows = []
     rows.append(Tr(Td("&nbsp;")))  # spacer row on top
 
@@ -392,6 +398,192 @@ def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
 
     return wire_outer_cell
 
+def gv_ribbon_conductor_table(cable) -> Table:
+    rows = []
+    rows.append(Tr(Td("&nbsp;")))  # spacer row on top
+
+    inserted_break_inbetween = False
+    for wire in cable.wire_objects.values():
+        # insert blank space between wires and shields
+        if isinstance(wire, ShieldClass) and not inserted_break_inbetween:
+            rows.append(Tr(Td("&nbsp;")))  # spacer row between wires and shields
+            inserted_break_inbetween = True
+
+        # row above the wire
+        wireinfo = []
+        if cable.show_wirenumbers and not isinstance(wire, ShieldClass):
+            wireinfo.append(str(wire.id))
+        wireinfo.append(str(wire.color))
+        wireinfo.append(wire.label)
+
+        ins, outs = [], []
+        for conn in cable._connections:
+            if conn.via.id == wire.id:
+                if conn.from_ is not None:
+                    ins.append(str(conn.from_))
+                if conn.to is not None:
+                    outs.append(str(conn.to))
+
+        cells_above = [
+            Td(" " + ", ".join(ins), align="left"),
+            Td(" "),  # increase cell spacing here
+            Td(bom_bubble(wire.bom_id)) if cable.visual_type == "bundle" else None,
+            Td(":".join([wi for wi in wireinfo if wi is not None and wi != ""])),
+            Td(" "),  # increase cell spacing here
+            Td(", ".join(outs) + " ", align="right"),
+        ]
+        cells_above = [cell for cell in cells_above if cell is not None]
+        rows.append(Tr(cells_above))
+
+        # row below the wire
+        if wire.partnumbers:
+            cells_below = partnumbers2list(
+                wire.partnumbers, parent_partnumbers=cable.partnumbers
+            )
+            if cells_below is not None and len(cells_below) > 0:
+                table_below = (
+                    Table(
+                        Tr([Td(cell) for cell in cells_below]),
+                        border=0,
+                        cellborder=0,
+                        cellspacing=0,
+                    ),
+                )
+                rows.append(Tr(Td(table_below, colspan=len(cells_above))))
+
+    for wire in cable.wire_objects.values():
+        # the wire itself
+        rows.append(Tr(gv_ribbon_wire_cell(wire, len(cells_above))))
+
+    rows.append(Tr(Td("&nbsp;")))  # spacer row on bottom
+    tbl = Table(rows, border=0, cellborder=0, cellspacing=0)
+    return tbl
+
+def gv_multi_lead_conductor_table(cable) -> Table:
+    rows = []
+    rows.append(Tr(Td("&nbsp;")))  # spacer row on top
+
+    inserted_break_inbetween = False
+    for wire in cable.wire_objects.values():
+        # insert blank space between wires and shields
+        if isinstance(wire, ShieldClass) and not inserted_break_inbetween:
+            rows.append(Tr(Td("&nbsp;")))  # spacer row between wires and shields
+            inserted_break_inbetween = True
+
+        # row above the wire
+        wireinfo = []
+        if cable.show_wirenumbers and not isinstance(wire, ShieldClass):
+            wireinfo.append(str(wire.id))
+        wireinfo.append(str(wire.color))
+        wireinfo.append(wire.label)
+
+        ins, outs = [], []
+        for conn in cable._connections:
+            if conn.via.id == wire.id:
+                if conn.from_ is not None:
+                    ins.append(str(conn.from_))
+                if conn.to is not None:
+                    outs.append(str(conn.to))
+
+        cells_above = [
+            Td(" " + ", ".join(ins), align="left"),
+            Td(" "),  # increase cell spacing here
+            Td(bom_bubble(wire.bom_id)) if cable.visual_type == "bundle" else None,
+            Td(":".join([wi for wi in wireinfo if wi is not None and wi != ""])),
+            Td(" "),  # increase cell spacing here
+            Td(", ".join(outs) + " ", align="right"),
+        ]
+        cells_above = [cell for cell in cells_above if cell is not None]
+        
+        if cable.show_connections != False:
+            rows.append(Tr(cells_above))
+
+        # row below the wire
+        if wire.partnumbers:
+            cells_below = partnumbers2list(
+                wire.partnumbers, parent_partnumbers=cable.partnumbers
+            )
+            if cells_below is not None and len(cells_below) > 0:
+                table_below = (
+                    Table(
+                        Tr([Td(cell) for cell in cells_below]),
+                        border=0,
+                        cellborder=0,
+                        cellspacing=0,
+                    ),
+                )
+                rows.append(Tr(Td(table_below, colspan=len(cells_above))))
+
+
+    rows.append(Tr(gv_multi_lead_wire_cell(cable, len(cells_above))))
+
+    rows.append(Tr(Td("&nbsp;")))  # spacer row on bottom
+    tbl = Table(rows, border=0, cellborder=0, cellspacing=0)
+    return tbl
+
+
+def gv_multi_lead_wire_cell(cable: Cable, colspan: int) -> Td:
+    if cable.casing_color != None:
+        # need to fix this
+        color_list = ["#000000"] + [cable.casing_color.html] * (len(list(cable.wire_objects.vaues())[0].color.html_padded_list)+1) + ["#000000"]
+    else:
+        print("Warning: When using 'multi-lead' visual_type it's required to define 'casing_color' defaulting to grey.")
+        color_list = ["#000000"] + ["#999999"] * (len(list(cable.wire_objects.values())[0].color.html_padded_list) + 1) + ["#000000"]
+
+    wire_inner_rows = []
+    for j, bgcolor in enumerate(color_list[::-1]):
+        wire_inner_cell_attribs = {
+            "bgcolor": bgcolor if bgcolor != "" else "#000000",
+            "border": 0,
+            "cellpadding": 0,
+            "colspan": colspan,
+            "height": 2,
+        }
+        wire_inner_rows.append(Tr(Td("", **wire_inner_cell_attribs)))
+    wire_inner_table = Table(wire_inner_rows, border=0, cellborder=0, cellspacing=0)
+    wire_outer_cell_attribs = {
+        "border": 0,
+        "cellspacing": 0,
+        "cellpadding": 0,
+        "colspan": colspan,
+        "height": 2 * len(color_list),
+        "port": "w1"
+    }
+    # ports in GraphViz are 1-indexed for more natural maping to pin/wire numbers
+    wire_outer_cell = Td(wire_inner_table, **wire_outer_cell_attribs)
+
+    return wire_outer_cell
+
+def gv_ribbon_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
+    if wire.color:
+        color_list = ["#000000"] + wire.color.html_padded_list + ["#000000"]
+    else:
+        color_list = ["#000000"]
+
+    wire_inner_rows = []
+    for j, bgcolor in enumerate(color_list[::-1]):
+        wire_inner_cell_attribs = {
+            "bgcolor": bgcolor if bgcolor != "" else "#000000",
+            "border": 0,
+            "cellpadding": 0,
+            "colspan": colspan,
+            "height": 2,
+        }
+        wire_inner_rows.append(Tr(Td("", **wire_inner_cell_attribs)))
+
+    wire_inner_table = Table(wire_inner_rows, border=0, cellborder=0, cellspacing=0)
+    wire_outer_cell_attribs = {
+        "border": 0,
+        "cellspacing": 0,
+        "cellpadding": 0,
+        "colspan": colspan,
+        "height": 2 * len(color_list),
+        "port": f"w{wire.index+1}",
+    }
+    # ports in GraphViz are 1-indexed for more natural maping to pin/wire numbers
+    wire_outer_cell = Td(wire_inner_table, **wire_outer_cell_attribs)
+
+    return wire_outer_cell
 
 def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
     if connection.via.color:
@@ -425,6 +617,37 @@ def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
 
     return color, code_left_1, code_left_2, code_right_1, code_right_2
 
+def gv_multi_lead_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
+    if connection.via.color:
+        # check if it's an actual wire and not a shield
+        color = f"#000000:{connection.via.color.html_padded}:#000000"
+    else:  # it's a shield connection
+        color = "#000000"
+
+    if connection.from_ is not None:  # connect to left
+        from_port_str = (
+            f":p{connection.from_.index+1}r"
+            if harness.connectors[connection.from_.parent].style != "simple"
+            else ""
+        )
+        code_left_1 = f"{connection.from_.parent}{from_port_str}:e"
+        code_left_2 = f"{connection.via.parent}:w1:w"
+        # ports in GraphViz are 1-indexed for more natural maping to pin/wire numbers
+    else:
+        code_left_1, code_left_2 = None, None
+
+    if connection.to is not None:  # connect to right
+        to_port_str = (
+            f":p{connection.to.index+1}l"
+            if harness.connectors[connection.to.parent].style != "simple"
+            else ""
+        )
+        code_right_1 = f"{connection.via.parent}:w1:e"
+        code_right_2 = f"{connection.to.parent}{to_port_str}:w"
+    else:
+        code_right_1, code_right_2 = None, None
+
+    return color, code_left_1, code_left_2, code_right_1, code_right_2
 
 def parse_arrow_str(inp: str) -> ArrowDirection:
     if inp[0] == "<" and inp[-1] == ">":
