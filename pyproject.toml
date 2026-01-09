@@ -1,2 +1,58 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wireviz"
+dynamic = ["version"]
+description = "Easily document cables and wiring harnesses"
+readme = { file = "docs/README.md", content-type = "text/markdown" }
+authors = [{ name = "Daniel Rojas" }]
+license = { text = "GPLv3" }
+keywords = [
+  "cable",
+  "connector",
+  "hardware",
+  "harness",
+  "wiring",
+  "wiring-diagram",
+  "wiring-harness",
+]
+dependencies = [
+  "click",
+  "graphviz",
+  "pillow",
+  "pyyaml",
+  "tabulate",
+]
+urls = { Homepage = "https://github.com/wireviz/WireViz" }
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Utilities",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+]
+
+[project.scripts]
+wireviz = "wireviz.wv_cli:wireviz"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+wireviz = ["templates/*.html"]
+
+[tool.setuptools.dynamic]
+version = { attr = "wireviz.__version__" }
+
 [tool.isort]
 profile = "black"
