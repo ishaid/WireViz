@@ -149,8 +149,24 @@ def parse(
                                 )
                         if sec == "connectors":
                             template_connectors[key] = attribs
+
                         elif sec == "cables":
+                            # Parse gauge lists that pair values with a unit.
+                            # Example input: [[12, 12, 28, 28], AWG]
+                            gauge = attribs.get("gauge")
+                            if (
+                                isinstance(gauge, list)
+                                and len(gauge) == 2
+                                and isinstance(gauge[1], str)
+                                and isinstance(gauge[0], (list, tuple))
+                            ):
+                                values, unit = gauge
+                                unit = unit.strip()
+                                # Reformat into a list of strings with the unit appended
+                                # Result: ['12 AWG', '12 AWG', '28 AWG', '28 AWG']
+                                attribs["gauge"] = [f"{v} {unit}" for v in values]
                             template_cables[key] = attribs
+
             else:  # section exists but is empty
                 pass
         else:  # section does not exist, create empty section

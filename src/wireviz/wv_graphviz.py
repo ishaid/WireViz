@@ -22,7 +22,11 @@ from wireviz.wv_dataclasses import (
     WireClass,
 )
 from wireviz.wv_html import Img, Table, Td, Tr
-from wireviz.wv_utils import html_line_breaks, remove_links
+from wireviz.wv_utils import (
+    html_line_breaks, 
+    remove_links,
+    get_visual_gauge
+)
 
 
 def gv_node_component(component: Component) -> Table:
@@ -342,10 +346,12 @@ def gv_conductor_table(cable) -> Table:
             Td(", ".join(outs) + " ", align="right"),
         ]
         cells_above = [cell for cell in cells_above if cell is not None]
-        rows.append(Tr(cells_above))
+
+        if cable.show_connections != False:
+            rows.append(Tr(cells_above))
 
         # the wire itself
-        rows.append(Tr(gv_wire_cell(wire, len(cells_above))))
+        rows.append(Tr(gv_wire_cell(wire, len(cells_above), cable=cable)))
 
         # row below the wire
         if wire.partnumbers:
@@ -367,33 +373,59 @@ def gv_conductor_table(cable) -> Table:
     tbl = Table(rows, border=0, cellborder=0, cellspacing=0)
     return tbl
 
+def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int, cable) -> Td:
+    
+    # 1. Prepare the gauge list for comparison
+    # If the cable has a single gauge defined, wrap it in a list.
+    # If it has a list of gauges, use it directly.
+    # If it has None, pass None.
+    all_gauges = None
+    if hasattr(cable, "gauge"):
+        if isinstance(cable.gauge, list):
+            all_gauges = cable.gauge
+        elif cable.gauge is not None:
+            all_gauges = [cable.gauge]
 
-def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
+    # 2. Calculate visual thickness (1..4) using the helper function
+    width = 1
+    if hasattr(wire, "gauge"):
+        width = get_visual_gauge(list_gauges=all_gauges, gauge=wire.gauge)
+
     if wire.color:
-        color_list = ["#000000"] + wire.color.html_padded_list + ["#000000"]
+        # 3. Multiply the core color sequence by the calculated width
+        # e.g. [Red, Blue] * 2 becomes [Red, Blue, Red, Blue]
+        wire_colors = wire.color.html_padded_list * width
+        
+        # Sandwich the thick core between black borders
+        color_list = ["#000000"] + wire_colors + ["#000000"]
     else:
+        # Default for shields or uncolored wires
         color_list = ["#000000"]
 
     wire_inner_rows = []
+    # Build the stack of color slices
     for j, bgcolor in enumerate(color_list[::-1]):
         wire_inner_cell_attribs = {
             "bgcolor": bgcolor if bgcolor != "" else "#000000",
             "border": 0,
             "cellpadding": 0,
             "colspan": colspan,
-            "height": 2,
+            "height": 2, 
         }
         wire_inner_rows.append(Tr(Td("", **wire_inner_cell_attribs)))
+        
     wire_inner_table = Table(wire_inner_rows, border=0, cellborder=0, cellspacing=0)
+    
     wire_outer_cell_attribs = {
         "border": 0,
         "cellspacing": 0,
         "cellpadding": 0,
         "colspan": colspan,
+        # Height logic: 2px per slice * number of slices
         "height": 2 * len(color_list),
         "port": f"w{wire.index+1}",
     }
-    # ports in GraphViz are 1-indexed for more natural maping to pin/wire numbers
+    
     wire_outer_cell = Td(wire_inner_table, **wire_outer_cell_attribs)
 
     return wire_outer_cell
@@ -433,7 +465,9 @@ def gv_ribbon_conductor_table(cable) -> Table:
             Td(", ".join(outs) + " ", align="right"),
         ]
         cells_above = [cell for cell in cells_above if cell is not None]
-        rows.append(Tr(cells_above))
+
+        if cable.show_connections != False:
+            rows.append(Tr(cells_above))
 
         # row below the wire
         if wire.partnumbers:
@@ -453,7 +487,7 @@ def gv_ribbon_conductor_table(cable) -> Table:
 
     for wire in cable.wire_objects.values():
         # the wire itself
-        rows.append(Tr(gv_ribbon_wire_cell(wire, len(cells_above))))
+        rows.append(Tr(gv_ribbon_wire_cell(wire, len(cells_above), cable=cable)))
 
     rows.append(Tr(Td("&nbsp;")))  # spacer row on bottom
     tbl = Table(rows, border=0, cellborder=0, cellspacing=0)
@@ -523,12 +557,36 @@ def gv_multi_lead_conductor_table(cable) -> Table:
 
 
 def gv_multi_lead_wire_cell(cable: Cable, colspan: int) -> Td:
+    all_gauges = None
+    if hasattr(cable, "gauge"):
+        if isinstance(cable.gauge, list):
+            all_gauges = cable.gauge
+        elif cable.gauge is not None:
+            all_gauges = [cable.gauge]
+
+    width = 1
+    gauge = None
+    if isinstance(cable.gauge, list) and cable.gauge:
+        gauge = cable.gauge[0]
+    else:
+        gauge = cable.gauge
+    if gauge is not None:
+        width = get_visual_gauge(list_gauges=all_gauges, gauge=gauge)
+
     if cable.casing_color != None:
         # need to fix this
-        color_list = ["#000000"] + [cable.casing_color.html] * (len(list(cable.wire_objects.vaues())[0].color.html_padded_list)+1) + ["#000000"]
+        wire_colors = [cable.casing_color.html] * (
+            len(list(cable.wire_objects.vaues())[0].color.html_padded_list) + 1
+        )
+        wire_colors = wire_colors * width
+        color_list = ["#000000"] + wire_colors + ["#000000"]
     else:
         print("Warning: When using 'multi-lead' visual_type it's required to define 'casing_color' defaulting to grey.")
-        color_list = ["#000000"] + ["#999999"] * (len(list(cable.wire_objects.values())[0].color.html_padded_list) + 1) + ["#000000"]
+        wire_colors = ["#999999"] * (
+            len(list(cable.wire_objects.values())[0].color.html_padded_list) + 1
+        )
+        wire_colors = wire_colors * width
+        color_list = ["#000000"] + wire_colors + ["#000000"]
 
     wire_inner_rows = []
     for j, bgcolor in enumerate(color_list[::-1]):
@@ -554,9 +612,23 @@ def gv_multi_lead_wire_cell(cable: Cable, colspan: int) -> Td:
 
     return wire_outer_cell
 
-def gv_ribbon_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td:
+def gv_ribbon_wire_cell(
+    wire: Union[WireClass, ShieldClass], colspan: int, cable: Cable
+) -> Td:
+    all_gauges = None
+    if hasattr(cable, "gauge"):
+        if isinstance(cable.gauge, list):
+            all_gauges = cable.gauge
+        elif cable.gauge is not None:
+            all_gauges = [cable.gauge]
+
+    width = 1
+    if hasattr(wire, "gauge"):
+        width = get_visual_gauge(list_gauges=all_gauges, gauge=wire.gauge)
+
     if wire.color:
-        color_list = ["#000000"] + wire.color.html_padded_list + ["#000000"]
+        wire_colors = wire.color.html_padded_list * width
+        color_list = ["#000000"] + wire_colors + ["#000000"]
     else:
         color_list = ["#000000"]
 
@@ -586,12 +658,36 @@ def gv_ribbon_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int) -> Td
     return wire_outer_cell
 
 def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
+    
+    # 1. Calculate visual thickness (width)
+    all_gauges = None
+    if hasattr(cable, "gauge"):
+        if isinstance(cable.gauge, list):
+            all_gauges = cable.gauge
+        elif cable.gauge is not None:
+            all_gauges = [cable.gauge]
+
+    width = 1
+    # Check if 'via' (the wire) has a gauge attribute
+    if hasattr(connection.via, "gauge"):
+        width = get_visual_gauge(list_gauges=all_gauges, gauge=connection.via.gauge)
+
+    # 2. Generate Color String
     if connection.via.color:
-        # check if it's an actual wire and not a shield
-        color = f"#000000:{connection.via.color.html_padded}:#000000"
+        # Get the base color string (e.g., "#FF0000" or "#FF0000:#0000FF")
+        base_color = connection.via.color.html_padded
+        
+        # Multiply the pattern by the calculated width
+        # e.g. if width is 2, "Red" becomes "Red:Red"
+        # e.g. if width is 2, "Red:Blue" becomes "Red:Blue:Red:Blue"
+        core_color = ":".join([base_color] * width)
+        
+        # Sandwich between black borders
+        color = f"#000000:{core_color}:#000000"
     else:  # it's a shield connection
         color = "#000000"
 
+    # 3. Determine Ports (Unchanged)
     if connection.from_ is not None:  # connect to left
         from_port_str = (
             f":p{connection.from_.index+1}r"
@@ -600,7 +696,6 @@ def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
         )
         code_left_1 = f"{connection.from_.parent}{from_port_str}:e"
         code_left_2 = f"{connection.via.parent}:w{connection.via.index+1}:w"
-        # ports in GraphViz are 1-indexed for more natural maping to pin/wire numbers
     else:
         code_left_1, code_left_2 = None, None
 
@@ -618,9 +713,22 @@ def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
     return color, code_left_1, code_left_2, code_right_1, code_right_2
 
 def gv_multi_lead_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
+    all_gauges = None
+    if hasattr(cable, "gauge"):
+        if isinstance(cable.gauge, list):
+            all_gauges = cable.gauge
+        elif cable.gauge is not None:
+            all_gauges = [cable.gauge]
+
+    width = 1
+    if hasattr(connection.via, "gauge"):
+        width = get_visual_gauge(list_gauges=all_gauges, gauge=connection.via.gauge)
+
     if connection.via.color:
         # check if it's an actual wire and not a shield
-        color = f"#000000:{connection.via.color.html_padded}:#000000"
+        base_color = connection.via.color.html_padded
+        core_color = ":".join([base_color] * width)
+        color = f"#000000:{core_color}:#000000"
     else:  # it's a shield connection
         color = "#000000"
 

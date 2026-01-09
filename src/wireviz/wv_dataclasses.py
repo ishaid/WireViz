@@ -509,7 +509,19 @@ class WireClass:
     def gauge_str(self):
         if not self.gauge:
             return None
-        actual_gauge = f"{self.gauge.number} {self.gauge.unit}"
+        if isinstance(self.gauge, list):
+            gauges = [g for g in self.gauge if g is not None]
+            if not gauges:
+                return None
+            units = {g.unit for g in gauges}
+            if len(units) == 1:
+                unit = gauges[0].unit
+                values = ", ".join(str(g.number) for g in gauges)
+                actual_gauge = f"{values} {unit}"
+            else:
+                actual_gauge = ", ".join(f"{g.number} {g.unit}" for g in gauges)
+        else:
+            actual_gauge = f"{self.gauge.number} {self.gauge.unit}"
         actual_gauge = actual_gauge.replace("mm2", "mm\u00B2")
         return actual_gauge
 
@@ -543,7 +555,7 @@ class Cable(TopLevelGraphicalComponent):
     # cable-specific properties
     visual_type: Optional[str] = None  # Determines the visual style of the cable
     bom_type: Optional[str] = None  # Determines how the cable is shown in bom
-    gauge: Optional[NumberAndUnit] = None
+    gauge: Union[NumberAndUnit, List[NumberAndUnit], None] = None
     length: Optional[NumberAndUnit] = None
     color_code: Optional[str] = None
     # wire information in particular
@@ -574,7 +586,19 @@ class Cable(TopLevelGraphicalComponent):
     def gauge_str(self):
         if not self.gauge:
             return None
-        actual_gauge = f"{self.gauge.number} {self.gauge.unit}"
+        if isinstance(self.gauge, list):
+            gauges = [g for g in self.gauge if g is not None]
+            if not gauges:
+                return None
+            units = {g.unit for g in gauges}
+            if len(units) == 1:
+                unit = gauges[0].unit
+                values = ", ".join(str(g.number) for g in gauges)
+                actual_gauge = f"{values} {unit}"
+            else:
+                actual_gauge = ", ".join(f"{g.number} {g.unit}" for g in gauges)
+        else:
+            actual_gauge = f"{self.gauge.number} {self.gauge.unit}"
         actual_gauge = actual_gauge.replace("mm2", "mm\u00B2")
         return actual_gauge
 
@@ -584,7 +608,7 @@ class Cable(TopLevelGraphicalComponent):
             return None
         actual_gauge = self.gauge_str
         equivalent_gauge = ""
-        if self.show_equiv:
+        if self.show_equiv and not isinstance(self.gauge, list):
             # convert unit if known
             if self.gauge.unit == "mm2":
                 equivalent_gauge = f" ({awg_equiv(self.gauge.number)} AWG)"
@@ -685,7 +709,17 @@ class Cable(TopLevelGraphicalComponent):
         # allow gauge, length, and other fields to be lists too (like part numbers),
         # and assign them the same way to bundles.
 
-        self.gauge = parse_number_and_unit(self.gauge, "mm2")
+        if isinstance(self.gauge, list):
+            self.gauge = [parse_number_and_unit(g, "mm2") for g in self.gauge]
+        else:
+            self.gauge = parse_number_and_unit(self.gauge, "mm2")
+
+        if isinstance(self.gauge, list):
+            if len(self.gauge) != self.wirecount:
+                raise Exception(
+                    f"List of gauges ({len(self.gauge)}) must match wirecount ({self.wirecount})"
+                )
+
         self.length = parse_number_and_unit(self.length, "m")
         self.amount = self.length  # for BOM
 
@@ -750,7 +784,7 @@ class Cable(TopLevelGraphicalComponent):
                 # inheritable from parent cable
                 type=self.type,
                 subtype=self.subtype,
-                gauge=self.gauge,
+                gauge=self.gauge[wire_index] if isinstance(self.gauge, list) else self.gauge,
                 length=self.length,
                 sum_amounts_in_bom=self.sum_amounts_in_bom,
                 ignore_in_bom=self.ignore_in_bom,

@@ -3,7 +3,8 @@
 import re
 from collections import namedtuple
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Iterable
+from collections import namedtuple
 
 NumberAndUnit = namedtuple("NumberAndUnit", "number unit")
 
@@ -241,3 +242,66 @@ def check_old(node: str, old_attr: dict, args: dict) -> None:
     for attr, descr in old_attr.items():
         if attr in args:
             raise ValueError(f"'{attr}' in {node}: '{attr}' {descr}")
+
+def get_visual_gauge(
+    list_gauges: Optional[Union[Iterable[NumberAndUnit], NumberAndUnit]],
+    gauge: Optional[NumberAndUnit]) -> int:
+    """
+    Return drawing width in {1..4} based on relative thickness ranking.
+    Convention: 4=thickest, 1=thinnest.
+    """
+    # 1. Handle Edge Case: No gauge to measure
+    if gauge is None:
+        # If we have a list, pick the first as default; otherwise return default medium width
+        if list_gauges:
+            gauge = list_gauges[0] if isinstance(list_gauges, list) else list_gauges
+        else:
+            return 2 
+
+    # 2. Normalize inputs into a clean set of comparison items
+    #    We use a set immediately to handle uniqueness.
+    if list_gauges is None:
+        pool = set()
+    elif isinstance(list_gauges, NumberAndUnit):
+        pool = {list_gauges}
+    else:
+        pool = {g for g in list_gauges if g is not None}
+    
+    pool.add(gauge) # Ensure the target is part of the comparison group
+
+    # 3. Define the 'Thickness' Value
+    #    AWG is inverse (larger number = thinner wire).
+    #    Metric (mm2) is direct (larger number = thicker wire).
+    is_awg = str(gauge.unit).strip().lower() == "awg"
+    
+    def get_thickness_val(item: NumberAndUnit) -> float:
+        # Negate AWG so that sorting ascending always means "thin -> thick"
+        val = float(item.number)
+        return -val if is_awg else val
+
+    # 4. Sort unique thicknesses (Thin -> Thick)
+    sorted_unique = sorted(
+        {get_thickness_val(g) for g in pool}
+    )
+    
+    # 5. Determine Rank
+    #    Find where the current gauge fits in the sorted unique list.
+    target_val = get_thickness_val(gauge)
+    
+    # Use simple min-distance matching to handle potential float inaccuracies
+    closest_val = min(sorted_unique, key=lambda x: abs(x - target_val))
+    rank_index = sorted_unique.index(closest_val)
+    total_unique = len(sorted_unique)
+
+    # 6. Map Rank to Width (1..4)
+    #    If only 1 unique gauge exists, return medium thickness (2).
+    if total_unique == 1:
+        return 2
+
+    #    Linear Mapping:
+    #    index 0 (Thinnest) -> 1
+    #    index Max (Thickest) -> 4
+    #    We use standard rounding to snap to integer levels.
+    fraction = rank_index / (total_unique - 1)
+    return int(round(1 + (fraction * 3)))
+
