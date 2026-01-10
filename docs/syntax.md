@@ -92,10 +92,8 @@ tweak:  # optional tweaking of .gv output
 ```yaml
 <str>   :  # unique cable designator/name
   # general information about a connector (all optional)
-  category: <category>  # may be set to bundle;
-                        # generates one BOM item for every wire in the bundle
-                        # instead of a single item for the entire cable;
-                        # renders with a dashed outline
+  visual_type: <str>      # determines how the cable will be rendered, acceptable types: default, multi-lead, ribbon. 
+  bom_type: <str>         # determines how the cable will be listed in the bom, acceptable types: parts, top-level.
   type: <str>   
   gauge: <int/float/str>  # allowed formats:
                           # <int/float> mm2  is understood
@@ -103,6 +101,7 @@ tweak:  # optional tweaking of .gv output
                           # <int/float>      is assumed to be mm2
                           # <str>            custom units and formats are allowed
                           #                  but unavailable for auto-conversion
+                          # [ [<int>,<int>,...], <str> ] accepts list of list of gauges and unit
   show_equiv: <bool>      # defaults to false; can auto-convert between mm2 and AWG
                           # and display the result when set to true
   length: <int/float>[ <unit>]  # <int/float> is assumed to be in meters unless <unit> is specified
