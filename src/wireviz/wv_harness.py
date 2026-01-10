@@ -339,6 +339,18 @@ class Harness:
         else:
             wireviz.wv_colors.padding_amount = 1
 
+        visual_gauge_pool = []
+        for cable in self.cables.values():
+            if not getattr(cable, "visual_gauge", False):
+                continue
+            if isinstance(cable.gauge, list):
+                visual_gauge_pool.extend([g for g in cable.gauge if g is not None])
+            elif cable.gauge is not None:
+                visual_gauge_pool.append(cable.gauge)
+        visual_gauge_pool = visual_gauge_pool or None
+        for cable in self.cables.values():
+            cable._visual_gauge_pool = visual_gauge_pool
+
         for cable in self.cables.values():
             # generate cable node
             # TODO: PN info for bundles (per wire)

@@ -16,6 +16,7 @@ from wireviz.wv_dataclasses import (
     Connector,
     MateComponent,
     MatePin,
+    NumberAndUnit,
     Options,
     PartNumberInfo,
     ShieldClass,
@@ -27,6 +28,18 @@ from wireviz.wv_utils import (
     remove_links,
     get_visual_gauge
 )
+
+
+def _get_visual_gauge_pool(cable: Cable) -> Optional[List[NumberAndUnit]]:
+    pool = getattr(cable, "_visual_gauge_pool", None)
+    if pool:
+        return pool
+    if hasattr(cable, "gauge"):
+        if isinstance(cable.gauge, list):
+            return cable.gauge
+        if cable.gauge is not None:
+            return [cable.gauge]
+    return None
 
 
 def gv_node_component(component: Component) -> Table:
@@ -378,16 +391,11 @@ def gv_wire_cell(wire: Union[WireClass, ShieldClass], colspan: int, cable) -> Td
     # If the cable has a single gauge defined, wrap it in a list.
     # If it has a list of gauges, use it directly.
     # If it has None, pass None.
-    all_gauges = None
-    if hasattr(cable, "gauge"):
-        if isinstance(cable.gauge, list):
-            all_gauges = cable.gauge
-        elif cable.gauge is not None:
-            all_gauges = [cable.gauge]
+    all_gauges = _get_visual_gauge_pool(cable)
 
     # 2. Calculate visual thickness (1..4) using the helper function
     width = 1
-    if hasattr(wire, "gauge"):
+    if getattr(cable, "visual_gauge", False) and hasattr(wire, "gauge"):
         width = get_visual_gauge(list_gauges=all_gauges, gauge=wire.gauge)
 
     if wire.color:
@@ -556,21 +564,17 @@ def gv_multi_lead_conductor_table(cable) -> Table:
 
 
 def gv_multi_lead_wire_cell(cable: Cable, colspan: int) -> Td:
-    all_gauges = None
-    if hasattr(cable, "gauge"):
-        if isinstance(cable.gauge, list):
-            all_gauges = cable.gauge
-        elif cable.gauge is not None:
-            all_gauges = [cable.gauge]
+    all_gauges = _get_visual_gauge_pool(cable)
 
     width = 1
-    gauge = None
-    if isinstance(cable.gauge, list) and cable.gauge:
-        gauge = cable.gauge[0]
-    else:
-        gauge = cable.gauge
-    if gauge is not None:
-        width = get_visual_gauge(list_gauges=all_gauges, gauge=gauge)
+    if getattr(cable, "visual_gauge", False):
+        gauge = None
+        if isinstance(cable.gauge, list) and cable.gauge:
+            gauge = cable.gauge[0]
+        else:
+            gauge = cable.gauge
+        if gauge is not None:
+            width = get_visual_gauge(list_gauges=all_gauges, gauge=gauge)
 
     if cable.casing_color != None:
         # need to fix this
@@ -614,15 +618,10 @@ def gv_multi_lead_wire_cell(cable: Cable, colspan: int) -> Td:
 def gv_ribbon_wire_cell(
     wire: Union[WireClass, ShieldClass], colspan: int, cable: Cable
 ) -> Td:
-    all_gauges = None
-    if hasattr(cable, "gauge"):
-        if isinstance(cable.gauge, list):
-            all_gauges = cable.gauge
-        elif cable.gauge is not None:
-            all_gauges = [cable.gauge]
+    all_gauges = _get_visual_gauge_pool(cable)
 
     width = 1
-    if hasattr(wire, "gauge"):
+    if getattr(cable, "visual_gauge", False) and hasattr(wire, "gauge"):
         width = get_visual_gauge(list_gauges=all_gauges, gauge=wire.gauge)
 
     if wire.color:
@@ -659,16 +658,11 @@ def gv_ribbon_wire_cell(
 def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
     
     # 1. Calculate visual thickness (width)
-    all_gauges = None
-    if hasattr(cable, "gauge"):
-        if isinstance(cable.gauge, list):
-            all_gauges = cable.gauge
-        elif cable.gauge is not None:
-            all_gauges = [cable.gauge]
+    all_gauges = _get_visual_gauge_pool(cable)
 
     width = 1
     # Check if 'via' (the wire) has a gauge attribute
-    if hasattr(connection.via, "gauge"):
+    if getattr(cable, "visual_gauge", False) and hasattr(connection.via, "gauge"):
         width = get_visual_gauge(list_gauges=all_gauges, gauge=connection.via.gauge)
 
     # 2. Generate Color String
@@ -712,15 +706,10 @@ def gv_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
     return color, code_left_1, code_left_2, code_right_1, code_right_2
 
 def gv_multi_lead_edge_wire(harness, cable, connection) -> Tuple[str, str, str, str, str]:
-    all_gauges = None
-    if hasattr(cable, "gauge"):
-        if isinstance(cable.gauge, list):
-            all_gauges = cable.gauge
-        elif cable.gauge is not None:
-            all_gauges = [cable.gauge]
+    all_gauges = _get_visual_gauge_pool(cable)
 
     width = 1
-    if hasattr(connection.via, "gauge"):
+    if getattr(cable, "visual_gauge", False) and hasattr(connection.via, "gauge"):
         width = get_visual_gauge(list_gauges=all_gauges, gauge=connection.via.gauge)
 
     if connection.via.color:

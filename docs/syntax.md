@@ -102,6 +102,7 @@ tweak:  # optional tweaking of .gv output
                           # <str>            custom units and formats are allowed
                           #                  but unavailable for auto-conversion
                           # [ [<int>,<int>,...], <str> ] accepts list of list of gauges and unit
+  visual_gauge: <boo>     # defaults to false; enables visual rendering of multiple gauges
   show_equiv: <bool>      # defaults to false; can auto-convert between mm2 and AWG
                           # and display the result when set to true
   length: <int/float>[ <unit>]  # <int/float> is assumed to be in meters unless <unit> is specified

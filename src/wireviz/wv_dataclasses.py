@@ -555,6 +555,7 @@ class Cable(TopLevelGraphicalComponent):
     # cable-specific properties
     visual_type: Optional[str] = None  # Determines the visual style of the cable
     bom_type: Optional[str] = None  # Determines how the cable is shown in bom
+    visual_gauge: bool = False
     gauge: Union[NumberAndUnit, List[NumberAndUnit], None] = None
     length: Optional[NumberAndUnit] = None
     color_code: Optional[str] = None
