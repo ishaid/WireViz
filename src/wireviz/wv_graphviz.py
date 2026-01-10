@@ -306,11 +306,10 @@ def gv_connector_loops(connector: Connector) -> List:
 
 
 def gv_conductor_table(cable) -> Table:
-    match cable.visual_type:
-        case "ribbon":
-            return gv_ribbon_conductor_table(cable)
-        case "multi-lead":
-            return gv_multi_lead_conductor_table(cable)
+    if cable.visual_type == "ribbon":
+        return gv_ribbon_conductor_table(cable)
+    if cable.visual_type == "multi-lead":
+        return gv_multi_lead_conductor_table(cable)
 
     rows = []
     rows.append(Tr(Td("&nbsp;")))  # spacer row on top
