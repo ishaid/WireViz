@@ -361,6 +361,8 @@ def gv_conductor_table(cable) -> Table:
 
         if cable.show_connections != False:
             rows.append(Tr(cells_above))
+        else:
+            rows.append(Tr(""))
 
         # the wire itself
         rows.append(Tr(gv_wire_cell(wire, len(cells_above), cable=cable)))
