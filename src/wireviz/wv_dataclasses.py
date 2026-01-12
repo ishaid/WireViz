@@ -155,6 +155,15 @@ class Image:
 
 
 @dataclass
+class Label:
+    label_text: Optional[PlainText] = None
+    label_color: SingleColor = None
+
+    def __post_init__(self):
+        self.label_color = SingleColor(self.label_color)
+
+
+@dataclass
 class PinClass:
     index: int
     id: str
@@ -307,6 +316,7 @@ class TopLevelGraphicalComponent(GraphicalComponent):  # abstract class
 class Connector(TopLevelGraphicalComponent):
     # connector-specific properties
     style: Optional[str] = None
+    label: Optional[Label] = None
     loops: List[List[Pin]] = field(default_factory=list)
     # pin information in particular
     pincount: Optional[int] = None
@@ -359,6 +369,9 @@ class Connector(TopLevelGraphicalComponent):
 
         if isinstance(self.image, dict):
             self.image = Image(**self.image)
+
+        if isinstance(self.label, dict):
+            self.label = Label(**self.label)
 
         self.ports_left = False
         self.ports_right = False

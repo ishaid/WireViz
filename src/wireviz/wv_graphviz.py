@@ -168,6 +168,106 @@ def gv_additional_component_table(component):
     return Table(rows, border=1, cellborder=0, cellpadding=3, cellspacing=0)
 
 
+def gv_label_wire_cell(label, wire, cable, port: str) -> Td:
+    all_gauges = _get_visual_gauge_pool(cable)
+
+    width = 1
+    if getattr(cable, "visual_gauge", False) and hasattr(wire, "gauge"):
+        width = get_visual_gauge(list_gauges=all_gauges, gauge=wire.gauge)
+
+    if label.label_color:
+        color_list = ["#000000"] + [label.label_color.html] * width + ["#000000"]
+    else:
+        color_list = ["#000000"]
+
+    label_inner_rows = []
+    for bgcolor in color_list[::-1]:
+        label_inner_cell_attribs = {
+            "bgcolor": bgcolor if bgcolor != "" else "#000000",
+            "border": 0,
+            "cellpadding": 0,
+            "colspan": 1,
+            "height": 2,
+        }
+        label_inner_rows.append(Tr(Td("", **label_inner_cell_attribs)))
+
+    label_inner_table = Table(label_inner_rows, border=0, cellborder=0, cellspacing=0)
+    label_outer_cell_attribs = {
+        "border": 0,
+        "cellspacing": 0,
+        "cellpadding": 0,
+        "colspan": 1,
+        "height": 2 * len(color_list),
+        "port": port,
+    }
+    return Td(label_inner_table, **label_outer_cell_attribs)
+
+
+def gv_label_multi_lead_wire_cell(label, cable, port: str) -> Td:
+    all_gauges = _get_visual_gauge_pool(cable)
+
+    width = 1
+    if getattr(cable, "visual_gauge", False):
+        gauge = None
+        if isinstance(cable.gauge, list) and cable.gauge:
+            gauge = cable.gauge[0]
+        else:
+            gauge = cable.gauge
+        if gauge is not None:
+            width = get_visual_gauge(list_gauges=all_gauges, gauge=gauge)
+
+    if label.label_color:
+        color_list = ["#000000"] + [label.label_color.html] * width + ["#000000"]
+    else:
+        color_list = ["#000000"]
+
+    label_inner_rows = []
+    for bgcolor in color_list[::-1]:
+        label_inner_cell_attribs = {
+            "bgcolor": bgcolor if bgcolor != "" else "#000000",
+            "border": 0,
+            "cellpadding": 0,
+            "colspan": 1,
+            "height": 2,
+        }
+        label_inner_rows.append(Tr(Td("", **label_inner_cell_attribs)))
+    label_inner_table = Table(label_inner_rows, border=0, cellborder=0, cellspacing=0)
+    label_outer_cell_attribs = {
+        "border": 0,
+        "cellspacing": 0,
+        "cellpadding": 0,
+        "colspan": 1,
+        "height": 2 * len(color_list),
+        "port": port,
+    }
+    return Td(label_inner_table, **label_outer_cell_attribs)
+
+
+def gv_label_node_table(label, cable) -> Table:
+    rows = []
+    rows.append(Tr(Td("&nbsp;")))  # spacer row on top
+
+    label_info = []
+    if label.label_color:
+        label_info.append(str(label.label_color))
+    if label.label_text:
+        label_info.append(html_line_breaks(label.label_text))
+    if label_info:
+        rows.append(Tr(Td(":".join([li for li in label_info if li]))))
+
+    if cable.visual_type == "multi-lead":
+        rows.append(Tr(gv_label_multi_lead_wire_cell(label, cable, port="w1")))
+    else:
+        for wire in cable.wire_objects.values():
+            rows.append(
+                Tr(gv_label_wire_cell(label, wire, cable, port=f"w{wire.index+1}"))
+            )
+
+    rows.append(Tr(Td("&nbsp;")))  # spacer row on bottom
+
+    return Table(rows, border=0, cellborder=0, cellspacing=0)
+
+
 def calculate_node_bgcolor(component, harness_options):
     # assign component node bgcolor at the GraphViz node level
     # instead of at the HTML table level for better rendering of node outline

@@ -31,6 +31,7 @@ from wireviz.wv_graphviz import (
     gv_connector_loops,
     gv_edge_mate,
     gv_edge_wire,
+    gv_label_node_table,
     gv_multi_lead_edge_wire,
     gv_node_component,
     parse_arrow_str,
@@ -351,6 +352,31 @@ class Harness:
         for cable in self.cables.values():
             cable._visual_gauge_pool = visual_gauge_pool
 
+        label_nodes = {}
+
+        def add_label_node(connector, cable, side):
+            if not connector or not connector.label:
+                return None
+            if not (connector.label.label_text or connector.label.label_color):
+                return None
+            key = (connector.designator, cable.designator, side)
+            if key in label_nodes:
+                return label_nodes[key]
+            label_id = f"{connector.designator}_label_{cable.designator}_{side}"
+            gv_label = gv_label_node_table(connector.label, cable)
+            dot.node(
+                label_id,
+                label=f"<\n{gv_label}\n>",
+                shape="none",
+            )
+            label_nodes[key] = label_id
+            return label_id
+
+        def label_port_name(cable, connection):
+            if cable.visual_type == "multi-lead":
+                return "w1"
+            return f"w{connection.via.index+1}"
+
         for cable in self.cables.values():
             # generate cable node
             # TODO: PN info for bundles (per wire)
@@ -372,9 +398,31 @@ class Harness:
                     color, l1, l2, r1, r2 = gv_edge_wire(self, cable, connection)
                 dot.attr("edge", color=color)
                 if not (l1, l2) == (None, None):
-                    dot.edge(l1, l2)
+                    from_connector = (
+                        self.connectors.get(connection.from_.parent)
+                        if connection.from_
+                        else None
+                    )
+                    label_id = add_label_node(from_connector, cable, "l")
+                    if label_id:
+                        label_port = label_port_name(cable, connection)
+                        dot.edge(l1, f"{label_id}:{label_port}:w", minlen="1.2")
+                        dot.edge(f"{label_id}:{label_port}:e", l2, minlen="1")
+                    else:
+                        dot.edge(l1, l2)
                 if not (r1, r2) == (None, None):
-                    dot.edge(r1, r2)
+                    to_connector = (
+                        self.connectors.get(connection.to.parent)
+                        if connection.to
+                        else None
+                    )
+                    label_id = add_label_node(to_connector, cable, "r")
+                    if label_id:
+                        label_port = label_port_name(cable, connection)
+                        dot.edge(r1, f"{label_id}:{label_port}:w", minlen="1.2")
+                        dot.edge(f"{label_id}:{label_port}:e", r2, minlen="1")
+                    else:
+                        dot.edge(r1, r2)
 
         for mate in self.mates:
             color, dir, code_from, code_to = gv_edge_mate(mate)

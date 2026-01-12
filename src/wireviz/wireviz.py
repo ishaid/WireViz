@@ -130,8 +130,8 @@ def parse(
     # add items
     # parse YAML input file ====================================================
 
-    sections = ["connectors", "cables", "connections"]
-    types = [dict, dict, list]
+    sections = ["connectors", "cables", "labels", "connections"]
+    types = [dict, dict, dict, list]
     for sec, ty in zip(sections, types):
         if sec in yaml_data and type(yaml_data[sec]) == ty:  # section exists
             if len(yaml_data[sec]) > 0:  # section has contents
